@@ -1,0 +1,6 @@
+*.pri
+*.pro
+*.user
+*.qml
+*.dat
+*.qrc
