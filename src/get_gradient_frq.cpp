@@ -15,6 +15,10 @@
 #include "header/glob_variables.h"
 
 #include "header/get_gradient_frq.h"
+#include "header/get_gradient_fr.h"
+#include "header/get_gradient_gr.h"
+#include "header/get_gradient_fr_lim.h"
+
 #include "header/eos_analytical.h"
 #include "header/meta_functions.h"
 
@@ -27,6 +31,13 @@ using namespace std;
 
 
 
+get_gradients_functions get_gradients2[]=
+    {
+        get_gradients_GR,
+        get_gradients_fR,
+        get_gradients_fRQ,
+        get_gradients_fR_lim
+    };
 
 
 
@@ -54,21 +65,24 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     double f_tilde = R+a*pow(R,2)/Rp;
     double f_tildeR = 1 + 2*a*R/Rp;
     double b=1.0;
+    if(Rp/(32.0) * pow(     -  pow( (R)/(Rp) + f_tildeR,2 ) -(4*kappa_2*(rho+press/pow(clight,2) ) )/(Rp), 1  )<0){b=-1.0;}
     double Q=(3*pow(Rq,2)/8)*(1-(2*kappa_2*(rho+press/pow(clight,2))/Rq)+(2*pow(kappa_2,2)*pow((rho-3*press/pow(clight,2)),2)/(3*pow(Rq,2)))-pow(1-(4*kappa_2*(rho+press/pow(clight,2)))/Rq,0.5));     //make Energy-dependent??
 
-    Q = -(kappa_2*press/pow(clight,2) + f_tilde*0.5 + (Rp/(8*b)) )
-    + Rp/(32*b) * pow(    3*((b*R)/(Rp) + f_tildeR) - pow( pow( (b*R)/(Rp) + f_tildeR,2 ) -(4*b*kappa_2*(rho+press/pow(clight,2) ) )/(Rp), 0.5  ),2); //From Helios--> Olmo --> p/m-paper
-
+    Q = 2*Rp* (-(kappa_2*press/pow(clight,2) + f_tilde*0.5 + (Rp/(8.0*b))*pow(f_tildeR,2) )
+    + Rp/(32.0*b) * pow(    3*((R*b)/(Rp) + f_tildeR) - pow( pow( (R*b)/(Rp) + f_tildeR,2 ) -(4*b*kappa_2*(rho+press/pow(clight,2) ) )/(Rp), 0.5  ),2) ); //From Helios--> Olmo --> p/m-paper
 
     double f=R+a*pow(R,2)/Rp + Q/Rq;
+    double fR=1+2*a*R/Rp;
+    double fRR = 2*a/Rp;
+    double fQ=1/Rq;
 
-    double dRdP = -kappa_2*(   -drhodP + (3/pow(clight,2) )    );
+    double dRdT = -kappa_2;
+    double dTdP = -drhodP + 3.0/pow(clight,2);
+    double dRdP = dRdT*dTdP;
     double dR_2dP = 2*R*dRdP;
     double ddRdPP = kappa_2*ddrhodPP;
-    double ddR_2dPP = 2*R*dRdP; //18* kappa_2;
-    double fR=1+2*a*R/Rp;
-    double fQ=1/Rq;
-    //double dfdRP = 1 + 2*a*R/Rp;
+    double ddR_2dPP = 2*R*dRdP;
+
     double dQdP = (3*pow(Rq,2)/8)*(-2*kappa_2*(drhodP + 1/pow(clight,2))/Rq + (2*pow(kappa_2,2)*2*(rho-3*press/pow(clight,2))*(drhodP-3/pow(clight,2)))/(3*pow(Rq,2))-0.5*pow(1-4*kappa_2*(rho+press/pow(clight,2))/Rq,-0.5)*(-4*kappa_2*(drhodP + 1/pow(clight,2))/Rq));
     //ddQdPP = (3*pow(Rq,2)/8) * ( 36*pow(kappa_2,2)/(3*Rq*Rq) +0.25*pow(1-4*kappa_2*(rho+press/pow(clight,2))/Rq,-3./2.)*pow(-4*kappa_2/Rq,2) );
     double ddQdPP = 3*Rq*Rq*(1./8.)* (  - (2*kappa_2*(ddrhodPP))/(Rq)
@@ -77,29 +91,29 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
                                           + (pow(1-(4*kappa_2*(rho+press/pow(clight,2) ))/(Rq), -0.5 ))*(4*kappa_2*(ddrhodPP)/Rq)   )
                             );
 
-    double dfdP = dRdP + a*dR_2dP/Rp + dQdP/Rq;
-    double ddfdPP = ddRdPP + a*ddR_2dPP/Rp + ddQdPP/Rq;
-    double dfRdP = (2*a/Rp)*dRdP;					// multiplied Rp artificially!!!!!!!!!!!!!!!!
+    double dfdP = fR*dRdP;
+    double ddfdPP = ddRdPP*fR + a*ddR_2dPP/Rp + ddQdPP/Rq;
+    double dfRdP = fRR*dRdP;
     double ddfRdPP = (2*a/Rp)*(-kappa_2*(-ddrhodPP));
-    double dfR_2dP = 2*fR*dfRdP; //4*a*dRdP/Rp + 4*pow(a,2)*dR_2dP/pow(Rp,2);
-    double ddfR_2dPP = 2*(dfRdP*dfRdP + fR*ddfRdPP); //4*a*a/pow(Rp,2) * kappa_2*kappa_2*18;
+    double dfR_2dP = 2*fR*dfRdP;
+    double ddfR_2dPP = 2*(dfRdP*dfRdP + fR*ddfRdPP);
 
-    double lambda=pow(kappa_2*press/pow(clight,2) + f/2 + pow(fR,2)/(8*fQ),0.5);
+    double lambda=pow(kappa_2*press/pow(clight,2) + f/2.0 + pow(fR,2)/(8*fQ),0.5);
     double lambda_2=pow(lambda,2);
 
     double sigma_1=fR*0.5+ p_m*pow(2*fQ,0.5)*pow(lambda_2-kappa_2*(rho+press/pow(clight,2)),0.5);
-    double sigma_2=fR/2+pow(2*fQ,0.5)*lambda;
+    double sigma_2=fR*0.5+pow(2*fQ,0.5)*lambda;
 
     double S=pow(sigma_2,2)/pow(sigma_1*sigma_2,0.5);
     double Omega=pow(sigma_1*sigma_2,0.5);
 
     double Ar=1-2*m*ggrav/(r*pow(clight,2));
 
-    double det_sigma=sigma_1*pow(sigma_2,3);           //1/math.sqrt(sigma1 * sigma2 * sigma2 * sigma2)
+    double det_sigma=sigma_1*pow(sigma_2,3);
     double sqrt_det_sigma=pow(det_sigma,0.5);
 
-    double tau_rr=(1/sqrt_det_sigma)*(f*0.5+kappa_2*press/pow(clight,2));    //T_rr=pressure for a perfect fluid
-    double tau_tt=(1/sqrt_det_sigma)*(f*0.5+kappa_2*(-rho));     //press cancel each other
+    double tau_rr=(1/sqrt_det_sigma)*(f*0.5+kappa_2*press/pow(clight,2))*fR;
+    double tau_tt=(1/sqrt_det_sigma)*(f*0.5+kappa_2*(-rho)) * fR;
 
     double dLambda_2dP = kappa_2/pow(clight,2) + dfdP*0.5 + (1/(8*fQ))*dfR_2dP;
     double dLambdadP = 0.5*pow(lambda_2,-0.5)*dLambda_2dP;
@@ -117,9 +131,14 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     dSdP = (2*sigma_2*dSigma2dP/(pow(sigma_1*sigma_2,0.5) ) )   - 0.5 * sigma_2*sigma_2*pow(sigma_1*sigma_2,-1.5)* (dSigma1dP*sigma_2 + sigma_1* dSigma2dP);     //skip dSdSigmaversion
 
     double alpha_r=(rho+press/pow(clight,2))*0.5*(dOmegadP/Omega+dSdP/S);
-    double beta_r= (2*r)*dOmegadP/Omega*  (1-(rho+press/pow(clight,2))*0.5*((3/2)*(dOmegadP/Omega)-(dOmegadP/Omega-dSdP/S) ));
+    double beta_r= (2*r)*dOmegadP/Omega*  (1/pow(clight,2)-(rho+press/pow(clight,2))*0.5*((3/2)*(dOmegadP/Omega)-(dOmegadP/Omega-dSdP/S) ));
 
     double P_r_0 = ggrav*((rho+press/pow(clight,2))/(r*(r-2*ggrav*m/pow(clight,2))))*(m-(tau_rr+(Omega/S)*tau_tt)*pow(r,3)*0.25*pow(clight,2)/ggrav);
+    //double P_r_0 = ((rho+press/pow(clight,2))/(r*(r-2*ggrav*m/pow(clight,2))))*(m*ggrav/pow(clight,2)-(tau_rr+(Omega/S)*tau_tt)*pow(r,3)*0.25)*pow(clight,2);
+
+    P_r_0 =  ((rho+press/pow(clight,2)) )/(r*(r-2*ggrav*m/pow(clight,2)))*(m*ggrav/pow(clight,2) -  (f+kappa_2*(press/pow(clight,2) - rho))/(fR)*pow(r,3)*0.25   )*pow(clight,2);
+    alpha_r = (rho+press/pow(clight,2) ) * dfRdP/fR;
+    beta_r = 2*r*dfRdP/fR * ( 1/pow(clight,2) - (3*(rho+press/pow(clight,2))/4.0)*dfRdP/fR );
 
 
 
@@ -130,8 +149,27 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     double dPdr= -(P_r_0/(1-alpha_r))*2/(1+p_m*pow(1-beta_r*P_r_0,0.5));
 
 
+/*
+    ///////////////
+    // c_1 + c_2*pr + c_3*pr2^tactics
+    ///////////////
+
+    double c_1  = 2*(rho+press/pow(clight,2) )/(r*(r-2.0*ggrav*m/pow(clight,2))) * ( m*ggrav/pow(clight,2) - ((tau_rr+(Omega/S)*tau_tt) )*pow(r,3)*0.25  );
+    double c_2  = r*2.0/r*(1.0/pow(clight,2) - (rho+press/pow(clight,2) )*0.5*(dOmegadP/Omega + dSdP/S)   );
+    double c_3  = r*dOmegadP/Omega*( 1.0/pow(clight,2) - (rho+press/pow(clight,2) )*0.5*(1.5*dOmegadP/Omega - (dSdP/S - dOmegadP/Omega)  )  );
+
+    //c_3= dfRdP/fR * ( 1.0/pow(clight,2) - (rho+press/pow(clight,2) )*0.5*1.5*dfRdP/fR);
+    //c_1  = 2*(rho+press/pow(clight,2) )/(r*(r-2.0*ggrav*m/pow(clight,2))) * ( m*ggrav/pow(clight,2) - ((f+kappa_2*(press/pow(clight,2) - rho) ) )*pow(r,3)*0.25  );
+    //c_2 = r*2.0/r*(1.0/pow(clight,2) - (rho+press/pow(clight,2) )*0.5*(2*dfRdP/fR)   );
+    //c_3 = r*dOmegadP/Omega*( 1.0/pow(clight,2) - (rho+press/pow(clight,2) )*0.5*(1.5*dfRdP/fR  )  );
+    // c
+    // b
+    // a
+    if(c_3>pow(10,-30)){dPdr = (-c_2 + p_m*sqrt( pow(c_2,2) - 4*c_3*c_1) )/2*c_3; }
+    else{dPdr = -c_1/c_2; }
 
 
+*/
 
 
 
@@ -139,8 +177,6 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     //dMdr PREPARATIoN
     ///////////////////
     double dOmegadr = dOmegadP*dPdr;
-
-    //cout << dOmegadr/Omega << endl;
     double dSdr = dSdP*dPdr;
 
 
@@ -210,12 +246,16 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
         double dOmegaPDOmegadP = dOmegadP*((-1)/pow(Omega,2))*dOmegadP + ddOmegadPP/Omega;
         double dalpha_rdr = 0.5*(drho_dp[num_an](press)+ 1/pow(clight,2) )*(dOmegadP/Omega + dSdP/S) + (rho + press/pow(clight,2))*0.5*(dOmegaPDOmegadP + dSPDSdP);
         dalpha_rdr = dalpha_rdr*dPdr;
-        double dbeta_rdr = 2*dOmegadP/Omega + 2*r*dOmegaPDOmegadP;
-        dbeta_rdr = dbeta_rdr + 2*dOmegadP/Omega*(rho+press/pow(clight,2))*0.5*(0.5*dOmegadP/Omega-dSPDSdP/S)
+        double beta_r1 = 2*r*dOmegadP/Omega;
+        double beta_r2 = 1- (rho + press/pow(clight,2))*0.5*( 1.5* dOmegadP/Omega - (dOmegadP/Omega - dSdP));
+        double dbeta_r1dP = 2.0/dPdr*dOmegadP/Omega + 2*r*dOmegaPDOmegadP;
+        double dbeta_r2dP = - (drhodP + 1.0/pow(clight,2) )/2.0*( 1.5* dOmegadP/Omega - (dOmegadP/Omega - dSdP))   - (rho + press/pow(clight,2))*0.5* ( 1.5* dOmegaPDOmegadP - (dOmegaPDOmegadP - dSPDSdP)) ;
+        double dbeta_rdP = dbeta_rdP + 2*dOmegadP/Omega*(rho+press/pow(clight,2))*0.5*(0.5*dOmegadP/Omega-dSPDSdP/S)
                               + 2*r*dOmegaPDOmegadP*(rho+press/pow(clight,2))*0.5*(0.5*dOmegadP/Omega-dSPDSdP/S)
                               + 2*r*dOmegadP/Omega*0.5*(0.5*dOmegadP/Omega-dSPDSdP/S)
                               + 2*r*dOmegadP/Omega*(rho+press/pow(clight,2))*0.5*(0.5*dOmegaPDOmegadP - dSPDSdP);
-        dbeta_rdr = dbeta_rdr*dPdr;
+        dbeta_rdP = dbeta_r1dP*beta_r2 + dbeta_r2dP*beta_r1;
+        double dbeta_rdr = dbeta_rdP*dPdr;
 
 
         double dSPdr = ddSdPP*dPdr;
@@ -229,14 +269,14 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
 
 
         double d1Dsqrt_det_sigmadP = -0.5*pow(det_sigma,-3./2.)*(pow(sigma_2,3)*dSigma1dP + 3*sigma_1*pow(sigma_2,2)*dSigma2dP);
-        double dtau_rrdP = d1Dsqrt_det_sigmadP*(f*0.5+kappa_2*press)+ 1/sqrt_det_sigma*(dfdP*0.5+kappa_2);
-        double dtau_ttdP = d1Dsqrt_det_sigmadP*(f*0.5-kappa_2*rho)+ 1/sqrt_det_sigma*(dfdP*0.5);
+        double dtau_rrdP = d1Dsqrt_det_sigmadP*(f*0.5+kappa_2*press/pow(clight,2))+ 1/sqrt_det_sigma*(dfdP*0.5+kappa_2/pow(clight,2));
+        double dtau_ttdP = d1Dsqrt_det_sigmadP*(f*0.5-kappa_2*rho)+ 1/sqrt_det_sigma*(dfdP*0.5 - kappa_2*drhodP);
 
 
 
-        double P_rr_0 = dPdr*(r*(r-2*m*ggrav/pow(clight,2)))*(m-(tau_rr+Omega*(1/S)*tau_tt)*pow(r,3)*0.25)
-                       +(rho+press/pow(clight,2))*(2*r-2*m*ggrav/pow(clight,2))*(m-(tau_rr+Omega*(1/S)*tau_tt)*pow(r,3)*0.25)
-                       +(rho+press/pow(clight,2))*(r*(r-2*m*ggrav/pow(clight,2)))*(  (3*r*r/4.)*m - dtau_rrdP*dPdr*pow(r,3)/4 - tau_rr*3+pow(r,2)/4
+        double P_rr_0 = dPdr*(r*(r-2*m*ggrav/pow(clight,2)))*(m*ggrav/pow(clight,2)-(tau_rr+Omega*(1/S)*tau_tt)*pow(r,3)*0.25)
+                       +(rho+press/pow(clight,2))*(2*r-2*m*ggrav/pow(clight,2))*(m*ggrav/pow(clight,2)-(tau_rr+Omega*(1/S)*tau_tt)*pow(r,3)*0.25)
+                       +(rho+press/pow(clight,2))*(r*(r-2*m*ggrav/pow(clight,2)))*(  (3*r*r/4.)*m*ggrav/pow(clight,2) - dtau_rrdP*dPdr*pow(r,3)/4 - tau_rr*3+pow(r,2)/4
                                                     - dOmegadP*dPdr*(1/S)*tau_tt*pow(r,3)*0.25
                                                     - Omega*(-1)*pow(S,-2)*dSdP*dPdr*tau_tt*pow(r,3)*0.25
                                                     - Omega*(1/S)*dtau_ttdP*dPdr*pow(r,3)*0.25
@@ -262,19 +302,25 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     double kk= (dOmegadr/Omega)*(    ((2*r-3*m*ggrav/pow(clight,2))/(r*(r-2*m*ggrav/pow(clight,2))))-0.75*(dOmegadr/Omega)      );
 
 
-
-
     //The following variables are used in Helios paper to calculate Prr. But i calculated Prr manually above, but wrong: did not take derivative with respect to r all variables e.g. rho
     double ss=1;
     double aa= 1+                        0.5*ss* ( (beta_r*P_r_0)/(pow(1-beta_r*P_r_0,0.5)*(1+ss*pow(1-beta_r*P_r_0,0.5)))  );
-    double bb=(dalpha_rdr/(1-alpha_r)) + 0.5*ss* ( (dbeta_rdr*P_r_0)/(pow(1-beta_r*P_r_0,0.5)*(1+ss*pow(1-beta_r*P_r_0,0.5)))  );   //same 2nd term as in a
+    double bb=(dalpha_rdr/(1-alpha_r)) + 0.5*ss* ( (dbeta_rdr*P_r_0)/(pow(1-beta_r*P_r_0,0.5)*(1+ss*pow(1-beta_r*P_r_0,0.5)))  );
 
-    double big_phi = (tau_rr + (Omega/S)*tau_tt);
-    double drhodp = drho_dp[num_an](press);//(1.0/gamma_now)*pow(press/K_now, (1.0/gamma_now)-1 )*(1.0/K_now);
+    double big_phi = tau_rr + (Omega/S)*tau_tt;
+    double drhodp = drho_dp[num_an](press);
     double dPhidP = dtau_rrdP + dtau_ttdP*(Omega/S) + tau_tt*(dOmegadP/S - Omega/pow(S,2)*dSdP);
+    /*
     double cc = ( (1+drhodp)/(rho+press/pow(clight,2)) - (dPhidP*pow(r,3)*0.25)/(m-big_phi * pow(r,3)*0.25)  )*dPdr -
     (  (2*(r-m*ggrav/pow(clight,2)))/(r*(r-2*m*ggrav/pow(clight,2))) + (3*big_phi*r*r*0.25 )/(m-big_phi*pow(r,3)*0.25)   );
-    double dd = (2/(r-2*m*ggrav/pow(clight,2)) + 1/(m-big_phi*r*r*r*0.25));
+    */
+    double cc =  ( (1/pow(clight,2)+drhodp)/(rho+press/pow(clight,2)))*dPdr
+            - ((dPhidP*pow(r,3)*0.25)/(m*ggrav/pow(clight,2)-big_phi * pow(r,3)*0.25)  )*dPdr
+            - (  (2*(r-m*ggrav/pow(clight,2)))/(r*(r-2*m*ggrav/pow(clight,2)))   + (3*big_phi*r*r*0.25 )/(m*ggrav/pow(clight,2)-big_phi*pow(r,3)*0.25)   );
+
+//
+     //aa=0;
+     double dd =  (2/(r-2*m*ggrav/pow(clight,2)) + 1/(m*ggrav/pow(clight,2)-big_phi*r*r*r*0.25));
 
 
 
@@ -291,9 +337,8 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
 
     if(r>1*pow(10,-6))
     {
-    //dm_dr = dmdr*pow(clight,2)/ggrav;
-    dm_dr = new_dmdr*pow(clight,2)/ggrav;
-
+        dm_dr = new_dmdr*pow(clight,2)/ggrav;
+        dm_dr = get_gradients2[1](m, press, r).first;
     }
 
 
@@ -303,14 +348,12 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     if(r>1*pow(10,-6))
     {
         dp_dr = dPdr;
+        //dp_dr = get_gradients2[1](m, press, r).second;
     }
     else
     {
-        dp_dr = (4.0*pi*r*press/pow(clight,2));
-        dp_dr = -ggrav*( rho+press/pow(clight,2) )*dp_dr;
+        dp_dr = -ggrav*( rho+press/pow(clight,2) )*(4.0*pi*r*press/pow(clight,2));
     }
-
-
 
 
 
