@@ -101,6 +101,10 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     double lambda=pow(kappa_2*press/pow(clight,2) + f/2.0 + pow(fR,2)/(8*fQ),0.5);
     double lambda_2=pow(lambda,2);
 
+
+    //if(lambda_2-kappa_2*(rho+press/pow(clight,2))<0){cout << "hey there " << endl;}
+    //if(press/rho>a){p_m=-1;}
+
     double sigma_1=fR*0.5+ p_m*pow(2*fQ,0.5)*pow(lambda_2-kappa_2*(rho+press/pow(clight,2)),0.5);
     double sigma_2=fR*0.5+pow(2*fQ,0.5)*lambda;
 
@@ -112,8 +116,8 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     double det_sigma=sigma_1*pow(sigma_2,3);
     double sqrt_det_sigma=pow(det_sigma,0.5);
 
-    double tau_rr=(1/sqrt_det_sigma)*(f*0.5+kappa_2*press/pow(clight,2))*fR;
-    double tau_tt=(1/sqrt_det_sigma)*(f*0.5+kappa_2*(-rho)) * fR;
+    double tau_rr=(1/sqrt_det_sigma)*(f*0.5+kappa_2*press/pow(clight,2));
+    double tau_tt=(1/sqrt_det_sigma)*(f*0.5+kappa_2*(-rho));
 
     double dLambda_2dP = kappa_2/pow(clight,2) + dfdP*0.5 + (1/(8*fQ))*dfR_2dP;
     double dLambdadP = 0.5*pow(lambda_2,-0.5)*dLambda_2dP;
@@ -149,7 +153,7 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     double dPdr= -(P_r_0/(1-alpha_r))*2/(1+p_m*pow(1-beta_r*P_r_0,0.5));
 
 
-/*
+
     ///////////////
     // c_1 + c_2*pr + c_3*pr2^tactics
     ///////////////
@@ -165,11 +169,14 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     // c
     // b
     // a
-    if(c_3>pow(10,-30)){dPdr = (-c_2 + p_m*sqrt( pow(c_2,2) - 4*c_3*c_1) )/2*c_3; }
-    else{dPdr = -c_1/c_2; }
+    if(c_3>pow(10,-30)){dPdr = dPdr;} //(-c_2 + p_m*sqrt( pow(c_2,2) - 4*c_3*c_1) )/2*c_3; }
+    else{
+        dPdr = -c_1/c_2;
+        //P_r_0 = -c_1/c_2;
+    }
 
 
-*/
+
 
 
 
@@ -269,6 +276,7 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
 
 
         double d1Dsqrt_det_sigmadP = -0.5*pow(det_sigma,-3./2.)*(pow(sigma_2,3)*dSigma1dP + 3*sigma_1*pow(sigma_2,2)*dSigma2dP);
+        //d1Dsqrt_det_sigmadP = -1.0/pow(fR,2)*dfRdP;
         double dtau_rrdP = d1Dsqrt_det_sigmadP*(f*0.5+kappa_2*press/pow(clight,2))+ 1/sqrt_det_sigma*(dfdP*0.5+kappa_2/pow(clight,2));
         double dtau_ttdP = d1Dsqrt_det_sigmadP*(f*0.5-kappa_2*rho)+ 1/sqrt_det_sigma*(dfdP*0.5 - kappa_2*drhodP);
 
@@ -298,7 +306,7 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
 
     //Preparing l,j,k ,  a,b,c,d
     double ll=((dOmegadr/Omega) + (2.0/r))/r;
-    double jj=0.5*(3*tau_rr - (Omega/S)*tau_tt);
+    double jj=0.5*(3*tau_rr - (Omega/S)*tau_tt)/fR;
     double kk= (dOmegadr/Omega)*(    ((2*r-3*m*ggrav/pow(clight,2))/(r*(r-2*m*ggrav/pow(clight,2))))-0.75*(dOmegadr/Omega)      );
 
 
@@ -307,7 +315,7 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     double aa= 1+                        0.5*ss* ( (beta_r*P_r_0)/(pow(1-beta_r*P_r_0,0.5)*(1+ss*pow(1-beta_r*P_r_0,0.5)))  );
     double bb=(dalpha_rdr/(1-alpha_r)) + 0.5*ss* ( (dbeta_rdr*P_r_0)/(pow(1-beta_r*P_r_0,0.5)*(1+ss*pow(1-beta_r*P_r_0,0.5)))  );
 
-    double big_phi = tau_rr + (Omega/S)*tau_tt;
+    double big_phi = (tau_rr + (Omega/S)*tau_tt)/fR;
     double drhodp = drho_dp[num_an](press);
     double dPhidP = dtau_rrdP + dtau_ttdP*(Omega/S) + tau_tt*(dOmegadP/S - Omega/pow(S,2)*dSdP);
     /*
@@ -331,14 +339,25 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     ///////////////////
 
     //New dMdr
-    double new_dmdr = jj + Ar*( (ddOmegadPP*dPdr*dPdr + dOmegadP*   dPdr*(cc*aa+bb))/Omega + kk   ) ;
+    double new_dmdr = jj + Ar*( (ddOmegadPP*dPdr*dPdr + dOmegadP*   dPdr*(cc*aa+bb)*dOmegadP)/Omega + kk   ) ;
     new_dmdr = new_dmdr/(ll- (Ar*dOmegadP*dPdr*dd*aa)/Omega);
+
+/*
+    //////////////////////
+    /// dMdr with the role Model of f(R) equations: see Reexamination of polytropic spheres in Palatini f(R) gravity, Olmo
+    /////
+
+    new_dmdr = jj*pow(r,2) + (r*(r-2*ggrav*m/pow(clight,2)))*0.5
+            * ( (ddOmegadPP/Omega - 0.75*pow(dOmegadP/Omega,2))*dPdr*dPdr + dOmegadP/Omega*P_rr  +  ((r-m*ggrav/pow(clight,2))/(r*(r-2*m*ggrav/pow(clight,2))))*dOmegadP/Omega*dPdr    );
+
+    new_dmdr = new_dmdr/(1+r*0.5*(dOmegadP/Omega)*dPdr  );
+*/
     double dm_dr = 4*pi*rho*pow(r,2);
 
     if(r>1*pow(10,-6))
     {
         dm_dr = new_dmdr*pow(clight,2)/ggrav;
-        dm_dr = get_gradients2[1](m, press, r).first;
+        //dm_dr = get_gradients2[1](m, press, r).first;
     }
 
 
