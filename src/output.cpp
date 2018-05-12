@@ -67,6 +67,12 @@ string DoublePowToString(double Rpp)
     cout << Rp_value[1] << endl;
     cout << Rp_value[2] << endl;
 
+    if(Rp_value[1]=='e')
+    {
+        Rp_value[1]= '.';
+        Rp_value[2] = '0';
+    }
+
     string Rp_string=Rp_value;
     Rp_string.append("*10^");
     Rp_string.append(pow_sign);

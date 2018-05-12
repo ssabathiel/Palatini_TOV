@@ -9,6 +9,8 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <string>
+#include <iostream>
 #include <math.h>
 #include <cmath>
 #include <cstdlib>  // for atof string to double conversion
@@ -20,14 +22,11 @@
 #include "header/eos_functions.h"
 #include "header/glob_variables.h"
 #include "header/output.h"
-#include "header/get_gradient_fr.h"
-#include "header/get_gradient_gr.h"
-#include "header/get_gradient_frq.h"
 #include "header/eos_analytical.h"
+#include "header/ply_analytical.h"
 #include "header/integrate_star.h"
 #include "header/meta_functions.h"
 #include "header/configure.h"
-//#include "test_library.h"
 using namespace std;
 using namespace constants;
 
@@ -37,10 +36,6 @@ using namespace constants;
 //////////////////////////
 // Define global constants:   everything in cm,g,seconds, cgs
 //////////////////////////
-
-
-
-
 
 int ccount=0;
 int r_count=0;
@@ -54,34 +49,16 @@ int r_count=0;
 alglib::spline1dinterpolant rho_of_press_alg;
 alglib::spline1dinterpolant press_of_rho_alg;
 
-tk::spline pf;       //pf = p(rho)-function
-tk::spline rhof;     //rhof = rho(p)-function
-
 
 string const EOS_mode = "Spline";
 //string const EOS_mode = "Const";
 //string const EOS_mode = "Polytrope";
 
-
-
-
 bool plot = 1;
 
 
 vector<FILE*> p_rho_profiles;
-
-
 pair<double, double> dm_dp_dr;
-
-
-
-///////////////////
-//Define Functions
-//////////////////
-
-
-
-
 
 
 ///////////////////////
@@ -96,9 +73,11 @@ bool print_dr = 0;
 
 bool GR_theory;
 bool fR_theory;
+bool fR_lim_theory;
 bool fRQ_theory;
 
 bool analytical_EOS;
+bool ply_EOS;
 bool tabular_EOS;
 
 double Rp;
@@ -117,23 +96,29 @@ int main()
     configure();
     rho_of_p.push_back(rho_of_p_num);
     rho_of_p.push_back(rho_of_p_analytical);
+    rho_of_p.push_back(rho_of_p_analytical_ply);
 
     p_of_rho.push_back(p_of_rho_num);
     p_of_rho.push_back(p_of_rho_analytical);
+    p_of_rho.push_back(p_of_rho_analytical_ply);
 
     drho_dp.push_back(drho_dp_num);
     drho_dp.push_back(drho_dp_analytical);
+    drho_dp.push_back(drho_dp_analytical_ply);
 
     ddrho_dPP.push_back(ddrho_dPP_num);
     ddrho_dPP.push_back(ddrho_dPP_analytical);
+    ddrho_dPP.push_back(ddrho_dPP_analytical_ply);
 
 
     if(GR_theory==1){th=0;}
     else if(fR_theory==1){th=1;}
     else if(fRQ_theory==1){th=2;}
+    else if(fR_lim_theory==1){th=3;}
 
     if(analytical_EOS==1){num_an=0;}
-    else if(fR_theory==1){num_an=1;}
+    else if(tabular_EOS==1){num_an=1;}
+    else if(ply_EOS==1){num_an=2;}
 
     char* test_dat = "EOS_data/Sly_csv";    //test_data.dat
     create_spline(test_dat);
@@ -151,7 +136,7 @@ int main()
 
     string theory_ID = create_theory_ID();
 
-    string output_path = "/home/silvester/Desktop/Masterthesis_Grav/Code/code_structured/Plotting/Results/TOV_output_";
+    string output_path = "./Plotting/Results/TOV_output_";
     output_path.append(theory_ID);
     FILE *ifp=fopen(output_path.c_str(),"w");
     rewind(ifp);
@@ -169,7 +154,7 @@ int main()
     for(int l=0;l<detailed_stars.size();l++)
     {
         string detailed_star = to_string(detailed_stars[l]);
-        output_path = "/home/silvester/Desktop/Masterthesis_Grav/Code/code_structured/Plotting/Results/Profiles/p_of_rho_ccount_";
+        output_path = "./Plotting/Results/Profiles/p_of_rho_ccount_";
         output_path.append(detailed_star);
         p_rho_profiles.push_back(fopen(output_path.c_str(),"w"));
         rewind(p_rho_profiles[l]);
@@ -198,7 +183,7 @@ int main()
             fprintf(ifp2,"%.10lf %.10lf %.10lf\n",rho_center_now,Mass,Radius);
         }
 
-        rho_center_now = rho_center_now*1.5;
+        rho_center_now = rho_center_now*1.2;
         cout << "rho_center_now= " << rho_center_now << endl;
 
     }
@@ -219,21 +204,4 @@ int main()
 }
 
 /////////////////////END MAIN
-
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////THE END OF THE ACTUAL ALGORITHM//////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
 

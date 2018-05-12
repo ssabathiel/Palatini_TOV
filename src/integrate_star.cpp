@@ -17,6 +17,7 @@
 
 #include "header/meta_functions.h"
 #include "header/get_gradient_fr.h"
+#include "header/get_gradient_fr_lim.h"
 #include "header/get_gradient_gr.h"
 #include "header/get_gradient_frq.h"
 
@@ -34,6 +35,7 @@ get_gradients_functions get_gradients[]=
         get_gradients_GR,
         get_gradients_fR,
         get_gradients_fRQ,
+        get_gradients_fR_lim
     };
 
 
@@ -47,7 +49,7 @@ get_gradients_functions get_gradients[]=
 
 pair<double, double> tov_integrate(double rho_C)
 {
-    double press = p_of_rho_num(rho_C);
+    double press = p_of_rho[num_an](rho_C);
 
     double press_now = press;
 
@@ -89,7 +91,7 @@ pair<double, double> tov_integrate(double rho_C)
             m_now = m_now + dm_dr*dr;
             press_now = press_now + dp_dr*dr;
         }
-        double rho_now= rho_of_p_num(press_now);
+        double rho_now= rho_of_p[num_an](press_now);
 
 
 

@@ -45,8 +45,8 @@ double Kf(double x)
 
 double psi_of_eps(double eps)
 {
-    eps =  ((a1 + a2*eps + a3*pow(eps,3))/(1+a4*eps))*Kf(a5*(eps-a6)) + (a7+a8*eps)* Kf(a9*(a10-eps)) + (a11 + a12*eps)*Kf(a13*(a14-eps)) + (a15 + a16*eps)*Kf(a17*(a18-eps))    ;
-    return eps;
+    double psi =  ((a1 + a2*eps + a3*pow(eps,3))/(1+a4*eps))*Kf(a5*(eps-a6)) + (a7+a8*eps)* Kf(a9*(a10-eps)) + (a11 + a12*eps)*Kf(a13*(a14-eps)) + (a15 + a16*eps)*Kf(a17*(a18-eps))    ;
+    return psi;
 }
 
 
@@ -89,8 +89,9 @@ double Log(double x)
 
 double dp_drho(double rho,double pressy)
 {
-    double dpdrho;
+    double dpdrho;    
     dpdrho=pressy*dpsi_deps(log10(rho))*(1.0/rho);
+    //dpdrho=pressy*deps_dpsi(log10(rho))*(1.0/rho);
     return dpdrho;
 }
 
