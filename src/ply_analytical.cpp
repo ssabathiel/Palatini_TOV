@@ -28,7 +28,7 @@ double Kf(double x)
 
 double psi_of_eps_ply(double eps)
 {
-    double psi = 2*eps + 5.29355;
+    double psi = 2.0*eps + 5.29355;
     return psi;
 }
 
@@ -62,7 +62,7 @@ double rho_of_p_analytical_ply(double p)
     //return alglib::spline1dcalc(rho_of_press_alg, p);
     double psi=log10(p);
     double eps = eps_of_psi_ply(psi);
-    double rho =  pow(10,eps); //exp(psi);          //--> should be 10^psi
+    double rho =  pow(10.0,eps); //exp(psi);          //--> should be 10^psi
     return rho;
 
 }
@@ -92,6 +92,7 @@ double drho_dp_analytical_ply(double pressy)
     double rho = rho_of_p_analytical_ply(pressy);
     double drhodp;
     drhodp=rho*deps_dpsi_ply(log10(pressy),rho)*(1.0/pressy);
+    //drhodp=rho*1.0/dpsi_deps_ply(log10(rho))*(1.0/pressy);
     return drhodp;
 }
 
@@ -99,7 +100,7 @@ double drho_dp_analytical_ply(double pressy)
 double ddp_drhorho_ply(double rho,double pressy)
 {
     double ddpddrho;
-    ddpddrho=dp_drho_ply(rho,pressy)*dpsi_deps_ply(log10(rho))*(1.0/rho) + pressy*ddpsi_depseps_ply(log10(rho))*(1.0/pow(rho,2)) + pressy*deps_dpsi_ply(log10(pressy),rho)*(-1.0/pow(rho,2)) ;
+    ddpddrho=dp_drho_ply(rho,pressy)*dpsi_deps_ply(log10(rho))*(1.0/rho) + pressy*ddpsi_depseps_ply(log10(rho))*(1.0/(pow(rho,2)*log(10.0))) + pressy*deps_dpsi_ply(log10(pressy),rho)*(-1.0/pow(rho,2))*log(10) ;
     return ddpddrho;
 }
 

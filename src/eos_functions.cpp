@@ -187,9 +187,9 @@ void create_spline(char * file_name)
     cout << "Data size= " << data_size << endl;
     vector<double> rhos(data_size);
     vector<double> press(data_size);
+
     rho_of_press_alg = string_to_double_EOS_rop(csvData_main,rhos,press);
     press_of_rho_alg = string_to_double_EOS_por(csvData_main,rhos,press);
-
 
     //Create interpolation-functions of the discrete EOS data-set
     pf.set_points(rhos,press);
@@ -201,4 +201,22 @@ double ddrho_dPP_num(double pressy)
 {
     double ddrhodPP = 0;
     return ddrhodPP;
+}
+
+
+void create_points_from_analytical_EOS(char *file_name, double (*analytical_fct)(double rho))
+{
+    FILE *ifp=fopen(file_name,"w");
+    rewind(ifp);
+    double press;
+    double rho = pow(10,6);
+
+    while(rho<7.0*pow(10,15))
+    {
+        press = analytical_fct(rho);
+        fprintf(ifp,"%.10lf,%.10lf\n",rho,press);
+        rho *= 1.1;
+
+    }
+    fclose(ifp);
 }

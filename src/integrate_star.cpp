@@ -18,6 +18,7 @@
 #include "header/meta_functions.h"
 #include "header/get_gradient_fr.h"
 #include "header/get_gradient_fr_lim.h"
+#include "header/get_gradient_fr_metric.h"
 #include "header/get_gradient_gr.h"
 #include "header/get_gradient_frq.h"
 
@@ -35,7 +36,8 @@ get_gradients_functions get_gradients[]=
         get_gradients_GR,
         get_gradients_fR,
         get_gradients_fRQ,
-        get_gradients_fR_lim
+        get_gradients_fR_lim,
+        get_gradients_fR_metric
     };
 
 
@@ -53,8 +55,10 @@ pair<double, double> tov_integrate(double rho_C)
 
     double press_now = press;
 
-    double m_now = 0.0;
-    double r=0.;
+
+    double r=r_0;
+    double m_now = get_gradients[th](0, press_now, r/2.0).first*(r_0);
+
     int count = 0;
     double rho = rho_C;
     double dm_dr;
@@ -63,38 +67,24 @@ pair<double, double> tov_integrate(double rho_C)
 
     double dr = 1.0*pow(10.0,(-20));      //=0.001km = 1m = 100cm
 
+    min_press = press*pow(10,-12);
 
-    while(press_now > min_press && count < max_r_iterations)
+    while(press_now > min_press)
     {
 
         count +=1;
         r_count+=1;
 
         //Calculate/Take p,m- step to even next radius step
-
         //RK4
-        //if(ccount==10 && r_count<440){cout << "Here: dm_dr, dp_dr calculated with r and old m/p" << endl;}
-        if(euler_method == false){
         double m_old = m_now;
         double p_old = press_now;
         pair<double, double> mass_press_now = RK4_step(m_old, p_old,r, dr);
         m_now = mass_press_now.first;
-        press_now = mass_press_now.second;}
+        press_now = mass_press_now.second;
 
-        //EulerMethod
-        if(euler_method == true)
-        {
-            pair<double, double> dp_dm_dr = get_gradients[th](m_now, press_now, r);
-            dm_dr = dp_dm_dr.first;
-            dp_dr = dp_dm_dr.second;
 
-            m_now = m_now + dm_dr*dr;
-            press_now = press_now + dp_dr*dr;
-        }
         double rho_now= rho_of_p[num_an](press_now);
-
-
-
         for(int l=0;l<p_rho_profiles.size();l++)
         {
             if(ccount == l )

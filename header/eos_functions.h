@@ -10,11 +10,13 @@
 #include "glob_variables.h"
 
 
+
 double rho_of_p_num(double p);
 double p_of_rho_num(double rho);
 double drho_dp_num(double p);
 void create_spline(char * file_name);
 double ddrho_dPP_num(double pressy);
+void create_points_from_analytical_EOS(char *file_name, double analytical_fct(double rho));
 
 #endif // EOS_FUNCTIONS
 

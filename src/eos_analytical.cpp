@@ -97,9 +97,15 @@ double dp_drho(double rho,double pressy)
 
 double drho_dp_analytical(double pressy)
 {
-    double rho = rhof(pressy);
+    double rho = alglib::spline1dcalc(rho_of_press_alg, pressy);
+    //double psi = log10(pressy);
+    //rho = pow(10,(psi - 5.29355)/2.0);
     double drhodp;
+    //std::cout << "rho= " << rho << std::endl;
+    //std::cout << "p  = " << pressy << std::endl;
     drhodp=rho*deps_dpsi(log10(pressy),rho)*(1.0/pressy);
+    //drhodp=rho*0.5*(1.0/pressy);
+    //std::cout << "hey heyy" << std::endl;
     return drhodp;
 }
 
@@ -107,7 +113,7 @@ double drho_dp_analytical(double pressy)
 double ddp_drhorho(double rho,double pressy)
 {
     double ddpddrho;
-    ddpddrho=dp_drho(rho,pressy)*dpsi_deps(log10(rho))*(1.0/rho) + pressy*ddpsi_depseps(log10(rho))*(1.0/pow(rho,2)) + pressy*deps_dpsi(log10(pressy),rho)*(-1.0/pow(rho,2)) ;
+    ddpddrho=dp_drho(rho,pressy)*dpsi_deps(log10(rho))*(1.0/rho) + pressy*ddpsi_depseps(log10(rho))*(1.0/(pow(rho,2)*log(10.0))) + pressy*deps_dpsi(log10(pressy),rho)*(-1.0/pow(rho,2)) ;
     return ddpddrho;
 }
 
@@ -129,7 +135,7 @@ double dpsi_deps(double eps)
             (a17*Power(E,a17*(a18 - eps))*(a15 + a16*eps))/Power(1 + Power(E,a17*(a18 - eps)),2) + (a9*Power(E,a9*(a10 - eps))*(a7 + a8*eps))/Power(1 + Power(E,a9*(a10 - eps)),2) +
             (a2 + 3*a3*Power(eps,2))/((1 + Power(E,a5*(-a6 + eps)))*(1 + a4*eps)) - (a4*(a1 + a2*eps + a3*Power(eps,3)))/((1 + Power(E,a5*(-a6 + eps)))*Power(1 + a4*eps,2)) -
             (a5*Power(E,a5*(-a6 + eps))*(a1 + a2*eps + a3*Power(eps,3)))/(Power(1 + Power(E,a5*(-a6 + eps)),2)*(1 + a4*eps));
-     return dpsideps;
+    return dpsideps;
 }
 
 

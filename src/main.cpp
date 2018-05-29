@@ -74,6 +74,7 @@ bool print_dr = 0;
 bool GR_theory;
 bool fR_theory;
 bool fR_lim_theory;
+bool fR_metric_theory;
 bool fRQ_theory;
 
 bool analytical_EOS;
@@ -84,6 +85,7 @@ double Rp;
 double Rq;
 int th;
 int num_an;
+double min_press;
 
 vector<rho_of_p_functions> rho_of_p;
 vector<p_of_rho_functions> p_of_rho;
@@ -94,34 +96,37 @@ int main()
 {
 
     configure();
-    rho_of_p.push_back(rho_of_p_num);
     rho_of_p.push_back(rho_of_p_analytical);
+    rho_of_p.push_back(rho_of_p_num);
     rho_of_p.push_back(rho_of_p_analytical_ply);
 
-    p_of_rho.push_back(p_of_rho_num);
     p_of_rho.push_back(p_of_rho_analytical);
+    p_of_rho.push_back(p_of_rho_num);
     p_of_rho.push_back(p_of_rho_analytical_ply);
 
-    drho_dp.push_back(drho_dp_num);
     drho_dp.push_back(drho_dp_analytical);
+    drho_dp.push_back(drho_dp_num);
     drho_dp.push_back(drho_dp_analytical_ply);
 
-    ddrho_dPP.push_back(ddrho_dPP_num);
     ddrho_dPP.push_back(ddrho_dPP_analytical);
+    ddrho_dPP.push_back(ddrho_dPP_num);
     ddrho_dPP.push_back(ddrho_dPP_analytical_ply);
 
+    create_points_from_analytical_EOS("./EOS_data/sly_points", p_of_rho_analytical);
 
     if(GR_theory==1){th=0;}
     else if(fR_theory==1){th=1;}
     else if(fRQ_theory==1){th=2;}
     else if(fR_lim_theory==1){th=3;}
+    else if(fR_metric_theory==1){th=4;}
 
     if(analytical_EOS==1){num_an=0;}
     else if(tabular_EOS==1){num_an=1;}
     else if(ply_EOS==1){num_an=2;}
 
-    char* test_dat = "EOS_data/Sly_csv";    //test_data.dat
+    char* test_dat = "EOS_data/sly_points";    //test_data.dat
     create_spline(test_dat);
+
 
     ///////////////////////////////////////
     //LOOP OVER RHO_CENTERS if multiple stars, other wise INTEGRATE ONLY ONCE
@@ -166,22 +171,17 @@ int main()
         pair<double, double> Mass_Radius = tov_integrate(rho_center_now);
         Mass = Mass_Radius.first;
         Radius = Mass_Radius.second;
-        if(Mass < 3000.0)          //Due to numerical instabilities
-        {
+
         Masses.push_back(Mass);
         Radi.push_back(Radius);
-        }
+
         cout << "Mass at Star# " << ccount << " = "<< Mass << endl;
         cout << "rho at star# " << ccount << " = " << rho_center_now << endl;
         cout << "Radius at star# " << ccount << " = " << Radius << endl << endl;
 
         //Write Result on File "TOV_output"
-        //if(Mass < 3.0 && Mass >0)          //Due to numerical instabilities
-        if(Mass >0)          //Due to numerical instabilities
-        {
-            fprintf(ifp,"%.10lf %.10lf %.10lf\n",rho_center_now,Mass,Radius);
-            fprintf(ifp2,"%.10lf %.10lf %.10lf\n",rho_center_now,Mass,Radius);
-        }
+        fprintf(ifp,"%.10lf %.10lf %.10lf\n",rho_center_now,Mass,Radius);
+        fprintf(ifp2,"%.10lf %.10lf %.10lf\n",rho_center_now,Mass,Radius);
 
         rho_center_now = rho_center_now*1.2;
         cout << "rho_center_now= " << rho_center_now << endl;

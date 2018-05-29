@@ -50,10 +50,9 @@ void build_f(vector <double> coeff, double R, double f, double fR, double fRR, d
 
 pair<double, double> get_gradients_fR(double m, double press, double r)
 {
-    if(press<min_press){press=min_press;}
-    else{press = press;}
 
     double rho = rho_of_p[num_an](press);
+    //double rho_ply = rho_of_p[2](press);
 
 
 
@@ -67,25 +66,27 @@ pair<double, double> get_gradients_fR(double m, double press, double r)
     //dPdr PREPARATION
     //////////////////////
 
+    bool fR_Olmo = 1;
     double dpdrho = dp_drho(rho,press);
     double drhodP = drho_dp[num_an](press);
+    double drhodP_sly = drho_dp[0](press);
+    double drhodP_ply = drho_dp[2](press);
     double ddrhodPP = ddrho_dPP[num_an](press);
-
-    //cout << "drhodP= " << drhodP << endl;
-
-
 
     rho *= Gdc2;
     press *= Gdc4;
     m = m *= Gdc2;
     dpdrho *= Gdc4/Gdc2;
     drhodP *= Gdc2/Gdc4;
+    drhodP_sly *= Gdc2/Gdc4;
+    drhodP_ply *= Gdc2/Gdc4;
     ddrhodPP *= Gdc2/pow(Gdc4,2);
 
 
 
     double T=(-rho+3*press/pow(clight,2));
     double R=-kappa_2*T;
+
 
     double f=R+a*pow(R,2)/Rp;
     double fR=1+2*a*R/Rp;
@@ -115,16 +116,12 @@ pair<double, double> get_gradients_fR(double m, double press, double r)
     double dRdP = dRdT*dTdP;
     double ddRdPP = ddRdTT*pow(dTdP,2) + dRdT*ddTdPP;
 
-
-
     double dTdrho = -1+3*dpdrho/pow(clight,2);
-
     double dfdP = fR*dRdP;
     double dfRdT = fRR*dRdT;
     double dfRdP = dfRdT*dTdP;
     dfRdP = fRR*dRdP;
     double ddfRdPP = ddfRdRR*pow(dRdP,2)  + fRR*ddRdPP;
-
     double capF = fR;
 
     double R_rho = dRdT*dTdrho;
@@ -133,81 +130,48 @@ pair<double, double> get_gradients_fR(double m, double press, double r)
     double lambda_rho = 0.5*(R_rho - (f_rho/capF_rho));
     double e_B = 1/(1-2*m*ggrav/(r*pow(clight,2)));// - lambda_rho*pow(r,2)*ggrav/(3.0*pow(clight,2)));
 
-    if(e_B != e_B)
-    {
-        //e_B = 0;
-    }
-
-    if(abs(dTdP)<pow(10,-10)){dTdP += pow(10,-10);}
     double N_1 = (1.0/fR)*fRR*dRdT*(3.0/pow(clight,2) - drhodP);
     double N_2 = (1.0/fR)*( ddfRdRR*pow(dRdT,2) + fRR*ddRdTT)*pow(3.0/pow(clight,2)-drhodP,2) - (1.0/fR)*fRR*dRdT*ddrhodPP;
-
+             //N_2   = ddfRdPP/fR;
     double aa = r*N_1*( 1/pow(clight,2)-0.75*(rho+press/pow(clight,2) )*N_1 );
     double bb = 2*(1/pow(clight,2)-(rho+press/pow(clight,2) )*N_1 );
     double cc = -(rho+press/pow(clight,2) )*( (1-e_B)/(r) - ((8*pi*r*e_B*press*ggrav/pow(clight,4))/fR) + (r*e_B)/(2*fR)*( fR*R-f ) );
-
-    //if(bb< pow(10,-8)) {bb=pow(10,-8);}
-
 
     //aa= r*dfRdP/fR * ( 1.0/pow(clight,2) - (rho+press/pow(clight,2) )*0.5*1.5*dfRdP/fR);
     //aa= r*N_1 * ( 1.0/pow(clight,2) - (rho+press/pow(clight,2) )*0.5*1.5*N_1);
     //cc  = 2*(rho+press/pow(clight,2) )/(r*(r-2.0*ggrav*m/pow(clight,2))) * ( m*ggrav/pow(clight,2) - ((f+kappa_2*(press/pow(clight,2) - rho) ) )*pow(r,3)*0.25  );
     //bb = r*2.0/r*(1.0/pow(clight,2) - (rho+press/pow(clight,2) )*0.5*(2*dfRdP/fR)   );
-
     //cc = 2*(rho+press/pow(clight,2) )/(r*(r-2.0*ggrav*m/pow(clight,2))) * ( m*ggrav/pow(clight,2) - (f+kappa_2*(press/pow(clight,2) - rho) )*pow(r,3)*0.25  );
-    double dPdr_GR=-ggrav*( rho+press/pow(clight,2) )*(m*ggrav/pow(clight,2)+4.0*pi*r*r*r*press/pow(clight,2))/(r*(r-2.0*ggrav*m/pow(clight,2)));
+
 
     double dPdr;
-    if(aa>pow(10,-20))
+    if(aa>pow(10,-20) && ( pow(bb,2) - 4*aa*cc)>0 )
     {
-        dPdr = (-bb + sqrt( pow(bb,2) - 4*aa*cc) )/2*aa;
-        //dPdr = dPdr_GR;
-        //if(sqrt( pow(bb,2) - 4*aa*cc) != sqrt( pow(bb,2) - 4*aa*cc)) {dPdr=-cc/bb;}
+        dPdr = (-bb + sqrt( pow(bb,2) - 4*aa*cc) )/(2*aa);
     }
     else{dPdr = -cc/bb; }  //cout << "aa=" << aa << endl;
 
-    if( dPdr == 0 || sqrt( pow(bb,2) - 4*aa*cc) != sqrt( pow(bb,2) - 4*aa*cc) || aa != aa || bb != bb || cc != cc || cc==0  ){dPdr = dPdr_GR;}
+    double dPdr_abc = dPdr;
 
-    if(dPdr != dPdr && r_count>=0)
-    {
-
-        cout << "dPdr= " << dPdr << endl;
-        cout << "(-bb + p_m*sqrt( pow(bb,2) - 4*aa*cc) )= " << (-bb + p_m*sqrt( pow(bb,2) - 4*aa*cc) ) <<  endl;
-        cout << "(sqrt( pow(bb,2) - 4*aa*cc) )= " << (sqrt( pow(bb,2) - 4*aa*cc) ) <<  endl;
-        cout << " pow(bb,2) - 4*aa*cc = " << pow(bb,2) - 4*aa*cc <<  endl;
-        cout << "(-aa = " << -aa <<  endl;
-        cout << "(-bb = " << -bb <<  endl;
-        cout << "(-cc = " << -cc <<  endl;
-        cout << "e_B= " << e_B <<  endl;
-        cout << "m= " << m <<  endl;
-        cout << "r= " << r <<  endl;
-        cout << "(1-2*m*ggrav/(r*pow(clight,2)))= " << (1-2*m/(r)) <<  endl;
-        cout << "0.75*(rho+press/pow(clight,2) )*N_1= " << 0.75*(rho+press/pow(clight,2) )*N_1  <<  endl;
-        cout << "(rho+press/pow(clight,2) )*N_1= = " << (rho+press/pow(clight,2) )*N_1 <<  endl;
-
-
-
-
-    }
 
 
 
     ////////////////////////////
-    // ALTERNATIVE f(R) FORM - dPdr
+    // f(R) OLMO - dPdr
     ///////////////////////////
-
+    //dfRdP = 2*a/Rp*(-kappa_2*(-drhodP+3.0));
     double P_r_0 = (rho + press)/(r*(r-2*m))*(m- ( (f+kappa_2*(press-rho))/(fR)   )*pow(r,3)/4.0   );
     double alpha_r = (rho+press)*dfRdP/fR;
     double beta_r = 2*r*dfRdP/fR * ( 1- 3.0/4.0*(rho + press)*dfRdP/fR  );
 
-    dPdr= -(P_r_0/(1-alpha_r))*2/(1+p_m*pow(1-beta_r*P_r_0,0.5));
+    if(fR_Olmo==1){dPdr= -(P_r_0/(1-alpha_r))*2/(1.0+pow(1-beta_r*P_r_0,0.5));}
 
 
 
 
 
     ////////////////////////////
-    // ALTERNATIVE f(R) FORM  - END
+    // f(R) OLMO - dPdr  - END
     ///////////////////////////
 
 
@@ -222,21 +186,17 @@ pair<double, double> get_gradients_fR(double m, double press, double r)
     /////////
     /// 2nd Derivatives
     ///
-    //double ddTdrr = -ddrhodrr+3*ddPdrr/pow(clight,2);
-
 
     double ddcapFdPP = ddfRdRR*pow(dRdP,2) + fRR*ddRdPP;   //= 0 in R^2 theory
-
     double alpha = pow(r,2)*( (3.0/4.0)* pow(dcapFdr/capF,2) + (2*dcapFdr)/(r*capF) + (e_B)/(2)*(R-f/capF)    );
-
     double gamma = r*dcapFdr/(2*capF);
-    double A_prime = -(1/(1+gamma))*( (1-e_B)/(r) - e_B*8*pi*r*press*(ggrav/pow(clight,4))/fR   + alpha/r );
+    double A_prime = -(1/(1+gamma))*( (1.0-e_B)/r - e_B*8*pi*r*press*(ggrav/pow(clight,4))/fR   + alpha/r );
+    //A_prime = -2*dPdr/(rho+press);
     double dd = 0.5*r*A_prime + 2*gamma +1;
 
-
     double ddPdrr = (N_2*pow(dPdr/pow(clight,2),2) - 0.5*A_prime*( (drhodr + dPdr/pow(clight,2))/(rho+press/pow(clight,2)) - dd/r)
-            - dd/(2*(1+gamma)) * ( N_2*pow(dPdr/pow(clight,2),2) + (1-e_B)/(r*r) + e_B/fR*(fR*R-f) + 8*pi*e_B*rho*(ggrav/pow(clight,2))/fR + (gamma*(4-3*gamma))/(r*r) )
-            +(e_B)/(2*fR)*( fR*R-f) -  8*pi*e_B*press*(ggrav/pow(clight,4))/fR + (gamma*(2*3*gamma))/(r*r) )
+            - dd/(2*(1+gamma)) * ( N_2*pow(dPdr/pow(clight,2),2) + (1-e_B)/(r*r) + e_B/(2*fR)*(fR*R-f) + 8*pi*e_B*rho*(ggrav/pow(clight,2))/fR + (gamma*(4-3*gamma))/(r*r) )
+            +(e_B)/(2*fR)*( fR*R-f) -  8*pi*e_B*press*(ggrav/pow(clight,4))/fR + (gamma*(2-3*gamma))/(r*r) )
             * (rho+press/pow(clight,2))/(1/pow(clight,2)+N_1*(rho + press/pow(clight,2) )*( (dd)/(2*(1+gamma)) - 1  ) );
     //double ddrhodrr = ddrhodPP*pow(dPdr/pow(clight,2),2) + drhodP*ddPdrr;  //extra pow(clight,2)
     double ddcapFdrr = (ddcapFdPP*pow(dPdr/pow(clight,2),2) + dfRdP*ddPdrr);    // quiet 0
@@ -252,7 +212,7 @@ pair<double, double> get_gradients_fR(double m, double press, double r)
 
 
     ////////////////////////////
-    // ALTERNATIVE f(R) FORM - dMdr
+    // f(R) OLMO - dMdr
     ///////////////////////////
 
     double Ar = 1.0/(e_B);
@@ -263,6 +223,8 @@ pair<double, double> get_gradients_fR(double m, double press, double r)
 
 
     double dalpha_rdr = (drhodP +1)*dPdr*dfRdP/fR + (rho + press)* (ddfRdPP*dPdr/fR - dfRdP/pow(fR,2)*dfRdP*dPdr);
+
+
     double dbeta_rdr = beta_r/r
             + (2*r)*(ddfRdPP*dPdr/fR - dfRdP/pow(fR,2)*dfRdP*dPdr)*(1-0.75*(rho+press)*dfRdP/fR)
             + (2*r)*dfRdP/fR*(-0.75*(drhodP + 1)*dPdr*dfRdP/fR -0.75*(rho+press)*(ddfRdPP*dPdr/fR - dfRdP/pow(fR,2)*dfRdP*dPdr) );
@@ -286,74 +248,11 @@ pair<double, double> get_gradients_fR(double m, double press, double r)
 
     new_dmdr = new_dmdr/(ll- (Ar*dfRdP*dPdr/pow(clight,2)*dd*aa)/fR);
 
-    dmdr = new_dmdr;
+    if(fR_Olmo==1){dmdr = new_dmdr;}
 
     ////////////////////////////
-    // ALTERNATIVE f(R) FORM - dMdr -- END
+    // f(R) OLMO - dMdr  - END
     ///////////////////////////
-
-
-
-
-
-
-
-
-
-
-//if(dmdr<0){neg_dmdr++;}
-//if(r>1*pow(10,3) && ccount==1 && neg_dmdr==1)
-//if(r>1*pow(10,3) && ccount==21 && (r_count== 1018 || r_count ==1019))
-
-if( (ccount==1 || ccount==1) && r_count%100==0 && ccount==2)
-{
-    cout << "r_count: " << r_count << endl;
-    cout << "rho= " << rho << endl;
-    cout << "press= " << press << endl;
-    cout << "drhodp= " << drhodP << endl;
-}
-
-
-
-
-
-if(ccount==-2 && r_count<2)
-{
-
-cout << endl;
-cout << "===========" << endl;
-cout << "f(R)" << endl;
-cout << "r_count: " << r_count << endl;
-cout << "fR-dmdr= " << dmdr*(pow(clight,2)/ggrav) << endl;
-cout << "GR-dmdr= " << 4*pi*rho*pow(r,2) << endl;
-//cout << "1/(1+gamma) " << (1.0/(1+(r*dcapFdr)/(2*fR) )) << endl;
-//cout << "(1-2*m*ggrav/(r*pow(clight,2))) " << (1-2*m*ggrav/(r*pow(clight,2))) << endl;
-cout << "1st dmdr " << (1.0/(1+(r*dcapFdr)/(2*fR) ))    * (4*pi*pow(r,2)*rho/fR*(ggrav/pow(clight,2))    )                *(pow(clight,2)/ggrav) << endl;
-cout << "2nd dmdR " << (1.0/(1+(r*dcapFdr)/(2*fR) ))    *(-m*(ggrav/pow(clight,2))/r)                                     *(pow(clight,2)/ggrav) << endl;
-cout << "3rd dmdr " << (1.0/(1+(r*dcapFdr)/(2*fR) ))    * pow(r,2)/4.0*(R-f/fR)                                           *(pow(clight,2)/ggrav) << endl;
-cout << "4th dmdr " << (1.0/(1+(r*dcapFdr)/(2*fR) ))    * (pow(r,2)/2.0)*(1-2*m*ggrav/(r*pow(clight,2)))
-                                                        *( ddcapFdrr/fR  )   *(pow(clight,2)/ggrav) << endl;
-cout << "5th dmdr " << (1.0/(1+(r*dcapFdr)/(2*fR) ))    * (pow(r,2)/2.0)*(1-2*m*ggrav/(r*pow(clight,2)))
-                                                        *( 0.75*pow(dcapFdr/fR,2) )   *(pow(clight,2)/ggrav) << endl;
-cout << "6thth dmdr " << (1.0/(1+(r*dcapFdr)/(2*fR) ))  * (pow(r,2)/2.0)*(1-2*m*ggrav/(r*pow(clight,2)))
-                                                        *(  (2*dcapFdr)/(r*fR) )   *(pow(clight,2)/ggrav) << endl;
-
-cout << "7th dmdr " << m*(ggrav/pow(clight,2))/r*(pow(clight,2)/ggrav) << endl;
-cout << "rho= " << rho << endl;
-cout << "press= " << press << endl;
-cout << "ddcapFdrr= " << ddcapFdrr << endl;
-cout << "drhodp= " << drhodP << endl;
-cout << "dpdrho= " << dpdrho << endl;
-/*
-cout << " 1st dmdr" << (1.0/(1+(r*dcapFdr)/(2*fR) )) * (4*pi*pow(r,2)*rho/fR - m/r
-                                                        + pow(r,2)/4.0*(R-f/fR)*(pow(clight,2)/ggrav)
-                                                        + (pow(r,2)/2.0)*(pow(clight,2)/ggrav)
-                                                        *(1-2*m*ggrav/(r*pow(clight,2)))*
-                                                        ( ddcapFdrr/fR - 0.75*pow(dcapFdr/fR,2) + (2*dcapFdr)/(r*fR) )   )  << endl;
-*/
-cout << "--------" << endl;
-}
-
 
 
     double dpdr = dPdr;
@@ -364,27 +263,27 @@ cout << "--------" << endl;
 
     double dp_dr;
     double dm_dr;
-
-    if(r>1*pow(10,-6))     // does not matter how I cange this value: always at this value dm_dr gets negative
-        {
-            dp_dr = dpdr;
-            dm_dr = dmdr*pow(clight,2)/ggrav;
-            //dm_dr = get_gradients3[0](m /Gdc2, press /Gdc4, r).first*Gdc2;;
-            //dp_dr = get_gradients3[0](m /Gdc2, press /Gdc4, r).second*Gdc4;;
-            //dp_dr = (m+4.0*pi*r*r*r*press/pow(clight,2))/(r*(r-2.0*ggrav*m/pow(clight,2)));
-        }
-        else
-        {
-            dp_dr = (4.0*pi*r*press/pow(clight,2));
-            dp_dr = -ggrav*( rho+press/pow(clight,2) )*dp_dr;
-            dm_dr = 4*pi*rho*pow(r,2);
-
-        }
-
+    dp_dr = dpdr;
+    dm_dr = dmdr*pow(clight,2)/ggrav;
 
     dm_dr /= Gdc2;
     m /= Gdc2;
     dp_dr /= Gdc4;
+
+
+
+
+    if(dmdr!=dmdr || dmdr<0)
+    {
+        /*
+        cout << "dpdr= " << dPdr << endl;
+        cout << "dMdr= " << dmdr << endl;
+        cout <<"rho= " << rho << endl;
+        cout << "rho_ply= " << rho_ply << endl;
+        */
+    }
+
+
 
     return make_pair(dm_dr, dp_dr);
 }

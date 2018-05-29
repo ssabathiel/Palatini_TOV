@@ -15,6 +15,7 @@
     extern bool fR_theory;
     extern bool fRQ_theory;
     extern bool fR_lim_theory;
+    extern bool fR_metric_theory;
 
     extern bool analytical_EOS;
     extern bool tabular_EOS;
@@ -24,6 +25,8 @@
     extern int num_an;
 
     extern double p_m;
+
+    extern double min_press;
 
 
 
@@ -50,8 +53,9 @@
         double const rho_center = 1.0*pow(10,14);       // rho_center and value if rho=const
         double const rho_center_max2 = 6.749*pow(10,15); //pow(10,20);
         double const max_r_iterations=10000;
-        double const min_press = pow(1*10,-8);          // Set minimal Pressure, otherwise numerical issues, -9 or +26
-        double const a =  0.5;
+        //double const min_press = pow(1*10,22);  //10,-8         // Set minimal Pressure, otherwise numerical issues, -9 or +26
+        double const r_0 = pow(10,-10);
+        double const a =  1.0;
         double const kappa_2 = 8*pi;//8*pi*ggrav/pow(clight,2);
         double const gamma_0 = 5.0/3.0;
         double const gamma_1 = 6.0/2.0;            //or: 2.5 or 3.0
