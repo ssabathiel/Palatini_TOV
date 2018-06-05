@@ -208,6 +208,10 @@ void create_points_from_analytical_EOS(char *file_name, double (*analytical_fct)
 {
     FILE *ifp=fopen(file_name,"w");
     rewind(ifp);
+
+    FILE *ifp2=fopen("/home/silvester/fRQ_Projectt/build-fRQ_TOV2-Desktop-Debug/Plotting/EOS_Plotting/Sly_csv","w");
+    rewind(ifp2);
+
     double press;
     double rho = pow(10,6);
 
@@ -215,8 +219,8 @@ void create_points_from_analytical_EOS(char *file_name, double (*analytical_fct)
     {
         press = analytical_fct(rho);
         fprintf(ifp,"%.10lf,%.10lf\n",rho,press);
-        rho *= 1.1;
-
+        fprintf(ifp2,"%.10lf,%.10lf\n",rho,press);
+        rho *= 1.8;
     }
     fclose(ifp);
 }

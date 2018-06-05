@@ -1,0 +1,5 @@
+#ifndef FPS_ANALYTICAL
+#define FPS_ANALYTICAL
+
+#endif // FPS_ANALYTICAL
+

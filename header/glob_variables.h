@@ -20,6 +20,9 @@
     extern bool analytical_EOS;
     extern bool tabular_EOS;
     extern bool ply_EOS;
+    extern bool fps_EOS;
+    extern bool ap4_EOS;
+
 
     extern int th;
     extern int num_an;
@@ -27,6 +30,25 @@
     extern double p_m;
 
     extern double min_press;
+
+    extern double a1;
+    extern double a2;
+    extern double a3;
+    extern double a4;
+    extern double a5;
+    extern double a6;
+    extern double a7;
+    extern double a8;
+    extern double a9;
+    extern double a10;
+    extern double a11;
+    extern double a12;
+    extern double a13;
+    extern double a14;
+    extern double a15;
+    extern double a16;
+    extern double a17;
+    extern double a18;
 
 
 
@@ -51,7 +73,7 @@
         //Range and accuracy
         double const delta = 0.23;                      // Scalar for adapted integration-step dr   //original 0.23
         double const rho_center = 1.0*pow(10,14);       // rho_center and value if rho=const
-        double const rho_center_max2 = 6.749*pow(10,15); //pow(10,20);
+        double const rho_center_max2 =  6.749*pow(10,15); //pow(10,20);
         double const max_r_iterations=10000;
         //double const min_press = pow(1*10,22);  //10,-8         // Set minimal Pressure, otherwise numerical issues, -9 or +26
         double const r_0 = pow(10,-10);

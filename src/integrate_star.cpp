@@ -51,14 +51,14 @@ get_gradients_functions get_gradients[]=
 
 pair<double, double> tov_integrate(double rho_C)
 {
-    double press = p_of_rho[num_an](rho_C);
 
+    double press = p_of_rho[num_an](rho_C);
     double press_now = press;
 
 
     double r=r_0;
-    double m_now = get_gradients[th](0, press_now, r/2.0).first*(r_0);
 
+    double m_now = get_gradients[th](0, press_now, r/2.0).first*(r_0);
     int count = 0;
     double rho = rho_C;
     double dm_dr;

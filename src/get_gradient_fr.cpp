@@ -69,16 +69,17 @@ pair<double, double> get_gradients_fR(double m, double press, double r)
     bool fR_Olmo = 1;
     double dpdrho = dp_drho(rho,press);
     double drhodP = drho_dp[num_an](press);
-    double drhodP_sly = drho_dp[0](press);
+    //double drhodP_sly = drho_dp[0](press);
     double drhodP_ply = drho_dp[2](press);
     double ddrhodPP = ddrho_dPP[num_an](press);
+
+
 
     rho *= Gdc2;
     press *= Gdc4;
     m = m *= Gdc2;
     dpdrho *= Gdc4/Gdc2;
     drhodP *= Gdc2/Gdc4;
-    drhodP_sly *= Gdc2/Gdc4;
     drhodP_ply *= Gdc2/Gdc4;
     ddrhodPP *= Gdc2/pow(Gdc4,2);
 
@@ -94,6 +95,8 @@ pair<double, double> get_gradients_fR(double m, double press, double r)
     double ddfRdRR = 0;
     double ddRdTT = 0;
     double ddTdPP = -ddrhodPP;
+
+
 
 
 

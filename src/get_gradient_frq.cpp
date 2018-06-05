@@ -192,7 +192,7 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     cout << "c_3= " << c_3 << endl;
     */
 
-    if(pow(c_2,2) - 4*c_3*c_1<0 ) {cout << "pow(c_2,2) - 4*c_3*c_1) = " << pow(c_2,2) - 4*c_3*c_1 << endl;}
+    //if(pow(c_2,2) - 4*c_3*c_1<0 ) {cout << "pow(c_2,2) - 4*c_3*c_1) = " << pow(c_2,2) - 4*c_3*c_1 << endl;}
 
     if(abs(c_3)>pow(10,-20)){dPdr = dPdr;}// (-c_2 + p_m*sqrt( pow(c_2,2) - 4*c_3*c_1) )/(2*c_3); } //
     else{

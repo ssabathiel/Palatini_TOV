@@ -32,7 +32,6 @@ using namespace constants;
 
 
 
-
 //////////////////////////
 // Define global constants:   everything in cm,g,seconds, cgs
 //////////////////////////
@@ -80,12 +79,33 @@ bool fRQ_theory;
 bool analytical_EOS;
 bool ply_EOS;
 bool tabular_EOS;
+bool fps_EOS;
+bool ap4_EOS;
 
 double Rp;
 double Rq;
 int th;
 int num_an;
 double min_press;
+
+double a1;
+ double a2;
+ double a3;
+double a4;
+double a5;
+double a6;
+double a7;
+double a8;
+double a9;
+double a10;
+double a11;
+double a12;
+double a13;
+double a14;
+double a15;
+double a16;
+double a17;
+double a18;
 
 vector<rho_of_p_functions> rho_of_p;
 vector<p_of_rho_functions> p_of_rho;
@@ -112,7 +132,79 @@ int main()
     ddrho_dPP.push_back(ddrho_dPP_num);
     ddrho_dPP.push_back(ddrho_dPP_analytical_ply);
 
-    create_points_from_analytical_EOS("./EOS_data/sly_points", p_of_rho_analytical);
+
+    if(analytical_EOS==1)
+    {
+
+    // SLY
+    a1 =6.22;
+     a2 =6.121;
+     a3 =0.005925;
+     a4 =0.16326;
+     a5 =6.48;
+     a6 =11.4971;
+     a7 =19.105;
+     a8 =0.8938;
+     a9 =6.54;
+     a10 = 11.4950;
+     a11 = -22.775;
+     a12 = 1.5707;
+     a13 = 4.3;
+     a14 = 14.08;
+     a15 = 27.80;
+     a16 = -1.653;
+     a17 = 1.50;
+     a18 = 14.67;
+    }
+
+    if(fps_EOS==1)
+    {
+    // FPS
+     a1 =6.22;
+     a2 =6.121;
+     a3 =0.006004;
+     a4 =0.16345;
+     a5 =6.50;
+     a6 =11.8440;
+     a7 =17.24;
+     a8 =1.065;
+     a9 =6.54;
+     a10 = 11.8421;
+     a11 = -22.003;
+     a12 = 1.5552;
+     a13 = 9.3;
+     a14 = 14.19;
+     a15 = 23.73;
+     a16 = -1.508;
+     a17 = 1.79;
+     a18 = 15.13;
+   }
+
+    if(ap4_EOS==1)
+    {
+    // AP4
+     a1 =4.3290;
+     a2 =4.3622;
+     a3 =9.1131;
+     a4 =-0.475;
+     a5 =3.4614;
+     a6 =14.8800;
+     a7 =21.3141;
+     a8 =0.1023;
+     a9 =0.0495;
+     a10 = 4.9401;
+     a11 = 10.2957;
+
+   }
+
+
+
+    if(fps_EOS==1 || analytical_EOS==1 || ap4_EOS==1)
+    {
+        create_points_from_analytical_EOS("./EOS_data/sly_points", p_of_rho_analytical);
+        char* test_dat = "EOS_data/sly_points";    //test_data.dat
+        create_spline(test_dat);
+    }
 
     if(GR_theory==1){th=0;}
     else if(fR_theory==1){th=1;}
@@ -123,11 +215,18 @@ int main()
     if(analytical_EOS==1){num_an=0;}
     else if(tabular_EOS==1){num_an=1;}
     else if(ply_EOS==1){num_an=2;}
+    else if(fps_EOS==1){num_an=0;}
+    else if(ap4_EOS==1){num_an=0;}
 
-    char* test_dat = "EOS_data/sly_points";    //test_data.dat
-    create_spline(test_dat);
 
 
+
+
+    /*
+    th=0;
+    while(th<3)
+    {
+    */
     ///////////////////////////////////////
     //LOOP OVER RHO_CENTERS if multiple stars, other wise INTEGRATE ONLY ONCE
     ///////////////////////////////////////
@@ -165,10 +264,10 @@ int main()
         rewind(p_rho_profiles[l]);
     }
 
-
     while(rho_center_now < rho_center_max){
         ccount++;
         pair<double, double> Mass_Radius = tov_integrate(rho_center_now);
+
         Mass = Mass_Radius.first;
         Radius = Mass_Radius.second;
 
@@ -199,8 +298,8 @@ int main()
     plotting_function("TOV_output", "R to M", "R[cm]", "M/M_O");
     fclose(ifp);
     fclose(ifp2);
-
-
+    //th++;
+    //}
 }
 
 /////////////////////END MAIN

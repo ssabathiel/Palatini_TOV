@@ -100,7 +100,7 @@ double drho_dp_analytical_ply(double pressy)
 double ddp_drhorho_ply(double rho,double pressy)
 {
     double ddpddrho;
-    ddpddrho=dp_drho_ply(rho,pressy)*dpsi_deps_ply(log10(rho))*(1.0/rho) + pressy*ddpsi_depseps_ply(log10(rho))*(1.0/(pow(rho,2)*log(10.0))) + pressy*deps_dpsi_ply(log10(pressy),rho)*(-1.0/pow(rho,2))*log(10) ;
+    ddpddrho=dp_drho_ply(rho,pressy)*dpsi_deps_ply(log10(rho))*(1.0/rho) + pressy*ddpsi_depseps_ply(log10(rho))*(1.0/(pow(rho,2)*log(10.0))) + pressy*deps_dpsi_ply(log10(pressy),rho)*(-1.0/pow(rho,2)) ;
     return ddpddrho;
 }
 

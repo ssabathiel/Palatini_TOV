@@ -98,14 +98,14 @@ string create_theory_ID()
     Rq_string = DoublePowToString(Rq);
 
 
-    if(GR_theory==1){theory_ID  = "GR";}
-    if(fR_theory==1)
+    if(th==0){theory_ID  = "GR";}
+    if(th==1 || th==4)
     {
         theory_ID  = "fR_Rp_";
         theory_ID.append(Rp_string);
 
     }
-    if(fRQ_theory==1)
+    if(th==2)
     {
         theory_ID  = "fRQ_Rp_";
         theory_ID.append(Rp_string);

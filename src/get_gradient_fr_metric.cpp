@@ -38,15 +38,20 @@ get_gradients_functions get_gradients4[]=
     };
 
 
-
+// Links
+// https://arxiv.org/pdf/1307.7977.pdf  // That's where you get the equations from.
+//https://arxiv.org/pdf/0910.5480.pdf
+// https://arxiv.org/pdf/1003.3179.pdf  //Good one: metric f(R) for many EOSs
+// https://arxiv.org/pdf/1301.5189.pdf  // Also good to compare
+// https://arxiv.org/pdf/1112.4154.pdf  // f(R,Q)
+// https://arxiv.org/pdf/1408.3856.pdf
+// https://ac.els-cdn.com/S0370269315000404/1-s2.0-S0370269315000404-main.pdf?_tid=de192040-c4b8-4fee-af3a-bbb59ea00d91&acdnat=1527331338_49adf0649a4a7ef587a1f5c71de2db73
+//
 pair<double, double> get_gradients_fR_metric(double m, double press, double r)
 {
 
 
     double rho = rho_of_p[num_an](press);
-
-
-
     ////////////////////////////////////////
     //PRECALCULATE TERMS NECESSARY FOR THE GRADIENTS
     /////////////////////////////////////////
@@ -149,43 +154,13 @@ pair<double, double> get_gradients_fR_metric(double m, double press, double r)
     double dhRdr = dhRdP*dPdr;
 
     double ddhRdPP = ddhRdRR*dRdP + hRR*ddRdPP;
-    double ddhRdrr = ddhRdPP*dPdr + dhRdP*ddPdrr;
+    double ddhRdrr = ddhRdPP*dPdr*dPdr + dhRdP*ddPdrr;
 
-    double dmdr = 4*pi*rho*pow(r,2) - alpha*pow(r,2)*( 4*pi*rho*hR - 0.25*(hR*R - h) -  1.0/(2*Ar)*( (2.0/r - A_prime/(2*Ar) )*dhRdr +  (1-m/r)*ddhRdrr        )  );
-if(r_count >299 && r_count<302 && ccount==2)
-{
-    cout << "r_count= " << r_count << endl;
-cout << "4*pi*rho*pow(r,2) - alpha*pow(r,2)*( 4*pi*rho*hR - 0.25*(hR*R - h) -  1.0/(2*Ar)*( (2.0/r - A_prime/(2*Ar) )*dhRdr +  ddhRdrr        )  );= " << 4*pi*rho*pow(r,2)  << endl;
-cout << "4*pi*rho*pow(r,2) - alpha*pow(r,2)*( 4*pi*rho*hR - 0.25*(hR*R - h) -  1.0/(2*Ar)*( (2.0/r - A_prime/(2*Ar) )*dhRdr +  ddhRdrr        )  );= " <<  - alpha*pow(r,2)*( 4*pi*rho*hR  ) << endl;
-cout << "4*pi*rho*pow(r,2) - alpha*pow(r,2)*( 4*pi*rho*hR - 0.25*(hR*R - h) -  1.0/(2*Ar)*( (2.0/r - A_prime/(2*Ar) )*dhRdr +  ddhRdrr        )  );= " <<  - alpha*pow(r,2)*( - 0.25*(hR*R - h)         )   << endl;
-cout << "4*pi*rho*pow(r,2) - alpha*pow(r,2)*( 4*pi*rho*hR - 0.25*(hR*R - h) -  1.0/(2*Ar)*( (2.0/r - A_prime/(2*Ar) )*dhRdr +  ddhRdrr        )  );= " <<  - alpha*pow(r,2)*(  -  1.0/(2*Ar)*( (2.0/r - A_prime/(2*Ar) )*dhRdr +  ddhRdrr        )  ) << endl;
-cout << "ddhRdrr= " << ddhRdrr << endl;
-cout << "ddhRdPP*dPdr= " << ddhRdPP*dPdr<< endl;
-cout << "dhRdP*ddPdrr= " << dhRdP*ddPdrr << endl;
-cout << "ddhRdPP= " << ddhRdPP<< endl;
-cout << "dPdr= " << dPdr<< endl;
-
-cout << "ddrhodPP= " << ddrhodPP << endl;
-}
+    double dmdr = 4*pi*rho*pow(r,2) - alpha*pow(r,2)*( 4*pi*rho*hR - 0.25*(hR*R - h) -  1.0/(2*Ar)*( (2.0/r - A_prime/(2*Ar) )*dhRdr +  ddhRdrr        )  );
 
 
-double aa1 = r*N_1*( 1/pow(clight,2)-0.75*(rho+press/pow(clight,2) )*N_1 );
-double bb1 = 2*(1/pow(clight,2)-(rho+press/pow(clight,2) )*N_1 );
-double cc1 = -(rho+press/pow(clight,2) )*( (1-e_B)/(r) - ((8*pi*r*e_B*press*ggrav/pow(clight,4))/fR) + (r*e_B)/(2*fR)*( fR*R-f ) );
 
 
-if(dPdr ==1)
-{
-    cout << "dPdr= " << dPdr << endl;
-    cout << "(-C2 + (sqrt( pow(C2,2) - 4*C3*C1) ))/(2*C3)= " << (-C2 + (sqrt( pow(C2,2) - 4*C3*C1) ))/(2*C3) << endl;
-    cout << "-C1/C2= " << -C1/C2 << endl;
-    cout << "C1= " << C1 << endl;
-    cout << "C2= " << C2 << endl;
-    cout << "C3= " << C3 << endl;
-    cout << "aa1= " << aa1 << endl;
-    cout << "bb1= " << bb1 << endl;
-    cout << "cc1= " << cc1 << endl;
-}
 
     ////////
     /// f(R)
