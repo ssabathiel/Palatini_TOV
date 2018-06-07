@@ -158,7 +158,6 @@ pair<double, double> get_gradients_fR(double m, double press, double r)
 
 
 
-
     ////////////////////////////
     // f(R) OLMO - dPdr
     ///////////////////////////
@@ -169,6 +168,18 @@ pair<double, double> get_gradients_fR(double m, double press, double r)
 
     if(fR_Olmo==1){dPdr= -(P_r_0/(1-alpha_r))*2/(1.0+pow(1-beta_r*P_r_0,0.5));}
 
+    if(r_count==503 && ccount==5)
+    {
+        //cout << "ccount= " << endl;
+        cout << "r_count= " << r_count << endl;
+        cout << "dPdr= " << dPdr << endl;
+        cout << "P_r_0= " << P_r_0 << endl;
+        cout << "alpha_r= " << P_r_0 << endl;
+        cout << "beta_r= " << beta_r<< endl;
+        cout << "1-beta_r*P_r_0= " << 1-beta_r*P_r_0 << endl;
+
+        cout << endl;
+    }
 
 
 

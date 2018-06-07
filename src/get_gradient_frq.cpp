@@ -43,6 +43,8 @@ get_gradients_functions get_gradients2[]=
 
 pair<double, double> get_gradients_fRQ(double m, double press, double r)
 {
+
+
     if(press<min_press){press=min_press;}
     else{press = press;}
 
@@ -71,19 +73,6 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     //////////////////////
     double T=(-rho+3*press/pow(clight,2));
     double R=-kappa_2*T;
-    double f_tilde = R+a*pow(R,2)/Rp;
-    double f_tildeR = 1 + 2*a*R/Rp;
-    double b=1.0;
-    if(Rp/(32.0) * pow(     -  pow( (R)/(Rp) + f_tildeR,2 ) -(4*kappa_2*(rho+press/pow(clight,2) ) )/(Rp), 1  )<0){b=-1.0;}
-    double Q=(3*pow(Rq,2)/8)*(1-(2*kappa_2*(rho+press/pow(clight,2))/Rq)+(2*pow(kappa_2,2)*pow((rho-3*press/pow(clight,2)),2)/(3*pow(Rq,2)))-pow(1-(4*kappa_2*(rho+press/pow(clight,2)))/Rq,0.5));     //make Energy-dependent??
-
-    Q = 2*Rp/b* (-(kappa_2*press/pow(clight,2) + f_tilde*0.5 + (Rp/(8.0*b))*pow(f_tildeR,2) )
-    + Rp/(32.0*b) * pow(    3*((R*b)/(Rp) + f_tildeR) - pow( pow( (R*b)/(Rp) + f_tildeR,2 ) -(4*b*kappa_2*(rho+press/pow(clight,2) ) )/(Rp), 0.5  ),2) ); //From Helios--> Olmo --> p/m-paper
-
-    double f=R+a*pow(R,2)/Rp + Q/Rq;
-    double fR=1+2*a*R/Rp;
-    double fRR = 2*a/Rp;
-    double fQ=1/Rq;
 
     double dRdT = -kappa_2;
     double dTdP = -drhodP + 3.0/pow(clight,2);
@@ -92,15 +81,53 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     double ddRdPP = kappa_2*ddrhodPP;
     double ddR_2dPP = 2*R*dRdP;
 
-    double dQdP = (3*pow(Rq,2)/8)*(-2*kappa_2*(drhodP + 1/pow(clight,2))/Rq + (2*pow(kappa_2,2)*2*(rho-3*press/pow(clight,2))*(drhodP-3/pow(clight,2)))/(3*pow(Rq,2))-0.5*pow(1-4*kappa_2*(rho+press/pow(clight,2))/Rq,-0.5)*(-4*kappa_2*(drhodP + 1/pow(clight,2))/Rq));
+    double f_tilde = R+a*pow(R,2)/Rp;
+    double f_tildeR = 1 + 2*a*R/Rp;
+    double df_tildedP = dRdP + 2*R*dRdP/Rp;
+    double df_tildeRdP = 2*a*dRdP/Rp;
+    double ddf_tildeRdPP = 2*a*ddRdPP/Rp;
+    double ddf_tildedPP = ddRdPP + 2*(dRdP*dRdP + R*ddRdPP)/Rp;
+
+
+
+    double b=1.0;
+    if(Rq/(32.0) * pow(     -  pow( (R)/(Rq) + f_tildeR,2 ) -(4*kappa_2*(rho+press/pow(clight,2) ) )/(Rq), 1  )<0){b=-1.0;}
+    double Q=(3*pow(Rq,2)/8)*(1-(2*kappa_2*(rho+press/pow(clight,2))/Rq)+(2*pow(kappa_2,2)*pow((rho-3*press/pow(clight,2)),2)/(3*pow(Rq,2)))-pow(1-(4*kappa_2*(rho+press/pow(clight,2)))/Rq,0.5));     //make Energy-dependent??
+
+    Q = 2*Rq/b* (-(kappa_2*press/pow(clight,2) + f_tilde*0.5 + (Rq/(8.0*b))*pow(f_tildeR,2) )
+    + Rq/(32.0*b) * pow(    3*((R*b)/(Rq) + f_tildeR) - pow( pow( (R*b)/(Rq) + f_tildeR,2 ) -(4*b*kappa_2*(rho+press/pow(clight,2) ) )/(Rq), 0.5  ),2) ); //From Helios--> Olmo --> p/m-paper
+
+    double Q_2 = 3*((R*b)/(Rq) + f_tildeR) - pow( pow( (R*b)/(Rq) + f_tildeR,2 ) -(4*b*kappa_2*(rho+press/pow(clight,2) ) )/(Rq), 0.5  );
+    double Q_sqr = pow( (R*b)/(Rq) + f_tildeR,2 ) -(4*b*kappa_2*(rho+press/pow(clight,2) ) )/(Rq);
+    double dQ_sqrdP = 2*(b*R/Rq + f_tildeR)*(b*dRdP/Rq + df_tildeRdP) - 4*b*kappa_2*(drhodP+1)/Rq;
+    double dQ_2dP = 3*(b*dRdP/Rq + df_tildeRdP) - 0.5*pow(Q_sqr,-0.5)*dQ_sqrdP;
+    double dQdP = - (kappa_2 + df_tildedP*0.5 + Rq/(8.0*b)*2*f_tildeR*df_tildeRdP  ) + Rq/(32.0*b)*2*Q_2*dQ_2dP;
+    dQdP = dQdP*2*Rq/b;
+
+
+    double f=R+a*pow(R,2)/Rp + Q/Rq;
+    double fR=1+2*a*R/Rp;
+    double fRR = 2*a/Rp;
+    double fQ=1/Rq;
+
+
+
+    //double dQdP = (3*pow(Rq,2)/8)*(-2*kappa_2*(drhodP + 1/pow(clight,2))/Rq + (2*pow(kappa_2,2)*2*(rho-3*press/pow(clight,2))*(drhodP-3/pow(clight,2)))/(3*pow(Rq,2))-0.5*pow(1-4*kappa_2*(rho+press/pow(clight,2))/Rq,-0.5)*(-4*kappa_2*(drhodP + 1/pow(clight,2))/Rq));
     //ddQdPP = (3*pow(Rq,2)/8) * ( 36*pow(kappa_2,2)/(3*Rq*Rq) +0.25*pow(1-4*kappa_2*(rho+press/pow(clight,2))/Rq,-3./2.)*pow(-4*kappa_2/Rq,2) );
     double ddQdPP = 3*Rq*Rq*(1./8.)* (  - (2*kappa_2*(ddrhodPP))/(Rq)
                                 + 2*kappa_2*2*( (drhodP - 3/pow(clight,2))*(drhodP - 3/pow(clight,2))* (rho-3*press/pow(clight,2))*ddrhodPP   )/(3*Rq*Rq)
                                 - 0.5*(  -0.5*pow(1-(4*kappa_2*(rho+press/pow(clight,2) ))/(Rq), -1.5 ) * (-4*kappa_2*(drhodP + 1/pow(clight,2)/Rq))* (-4*kappa_2*(drhodP + 1/pow(clight,2)/Rq))
                                           + (pow(1-(4*kappa_2*(rho+press/pow(clight,2) ))/(Rq), -0.5 ))*(4*kappa_2*(ddrhodPP)/Rq)   )
                             );
+    //ddQdPP = 0;
 
-    double dfdP = fR*dRdP;
+    double ddQsqrdPP = 2*( pow(b*dRdP/Rq + df_tildeRdP,2) + (b*R/Rq + f_tildeR)*(b*ddRdPP/Rq + ddf_tildeRdPP)) - 4*b*kappa_2*ddrhodPP/Rq;
+    double ddQ_2dPP = 3*(b*ddRdPP/Rq  + ddf_tildeRdPP) -  0.5*(-0.5*pow(Q_sqr,-1.5)*dQ_sqrdP*dQ_sqrdP + pow(Q_sqr,-0.5)*ddQsqrdPP   );
+    ddQdPP = -(0.5*ddf_tildedPP + Rq/(8.0*b)*2*( pow(df_tildeRdP,2) + f_tildeR*ddf_tildeRdPP   ) )  + Rq/(32*b)*2*(dQ_2dP*dQ_2dP + Q_2*ddQ_2dPP);
+    ddQdPP = ddQdPP*2*Rq/b;
+
+
+    double dfdP = fR*dRdP + fQ*dQdP;
     double ddfdPP = ddRdPP*fR + a*ddR_2dPP/Rp + ddQdPP/Rq;
     double dfRdP = fRR*dRdP;
     double ddfRdPP = (2*a/Rp)*(-kappa_2*(-ddrhodPP));
@@ -128,11 +155,17 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     double tau_rr=(1/sqrt_det_sigma)*(f*0.5+kappa_2*press/pow(clight,2))*fR;
     double tau_tt=(1/sqrt_det_sigma)*(f*0.5+kappa_2*(-rho))*fR;
 
+    tau_rr=(1/pow(fR,2))*(f_tilde*0.5+kappa_2*press/pow(clight,2))*fR;
+    tau_tt=(1/pow(fR,2))*(f_tilde*0.5+kappa_2*(-rho))*fR;
+
     double dLambda_2dP = kappa_2/pow(clight,2) + dfdP*0.5 + (1/(8*fQ))*dfR_2dP;
     double dLambdadP = 0.5*pow(lambda_2,-0.5)*dLambda_2dP;
 
-    double dSigma1dP = dfRdP*0.5 + pow(2*fQ,0.5)*pow(lambda_2-kappa_2*(rho+press/pow(clight,2)),-0.5)*0.5*(dLambda_2dP-kappa_2*(drho_dp[num_an](press)    + 1/pow(clight,2)));
+    double dSigma1dP = dfRdP*0.5 + pow(2*fQ,0.5)*pow(lambda_2-kappa_2*(rho+press/pow(clight,2)),-0.5)*0.5*(dLambda_2dP-kappa_2*(drhodP    + 1/pow(clight,2)));
     double dSigma2dP = 0.5*dfRdP+pow(2*fQ,0.5)*dLambdadP;
+
+    //dSigma1dP = dfRdP;
+    //dSigma2dP = dfRdP;
 
     double  dOmegadP = 0.5*pow(sigma_1*sigma_2,-0.5)*sigma_2*dSigma1dP + 0.5*pow(sigma_1*sigma_2,-0.5)*sigma_1*dSigma2dP;
     dOmegadP = pow(sigma_1*sigma_2,-0.5) * 0.5 * (dSigma1dP*sigma_2 + sigma_1* dSigma2dP);
@@ -143,10 +176,11 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     double dSdP = dSdSigma1*dSigma1dP + dSdSigma2*dSigma2dP;
     dSdP = (2*sigma_2*dSigma2dP/(pow(sigma_1*sigma_2,0.5) ) )   - 0.5 * sigma_2*sigma_2*pow(sigma_1*sigma_2,-1.5)* (dSigma1dP*sigma_2 + sigma_1* dSigma2dP);     //skip dSdSigmaversion
 
-    double alpha_r=(rho+press/pow(clight,2))*(dOmegadP/Omega+dSdP/S)/2.0;
-    double beta_r= (2*r)*dOmegadP/Omega*  (1/pow(clight,2)-(rho+press/pow(clight,2))*((3.0/4.0)*(dOmegadP/Omega)-(dOmegadP/Omega-dSdP/S) ));
+    double alpha_r= (rho+press/pow(clight,2))*(dOmegadP/Omega+dSdP/S)/2.0;
+    double beta_r=  (2*r)*dOmegadP/Omega*  (1/pow(clight,2)-(rho+press/pow(clight,2))*((3.0/4.0)*(dOmegadP/Omega)-(dOmegadP/Omega-dSdP/S) ));
 
-    double P_r_0 = ggrav*((rho+press/pow(clight,2))/(r*(r-2*ggrav*m/pow(clight,2))))*(m-(tau_rr+(Omega/S)*tau_tt)*pow(r,3)*0.25*pow(clight,2)/ggrav);
+    double P_r_0 = ggrav*((rho+press/pow(clight,2))/(r*(r-2*ggrav*m/pow(clight,2))))*(m -(tau_rr+(Omega/S)*tau_tt)*pow(r,3)*0.25*pow(clight,2)/ggrav);
+    //+4*pi*r*r*r*press);//
     //double P_r_0 = ((rho+press/pow(clight,2))/(r*(r-2*ggrav*m/pow(clight,2))))*(m*ggrav/pow(clight,2)-(tau_rr+(Omega/S)*tau_tt)*pow(r,3)*0.25)*pow(clight,2);
 
     //P_r_0 =  ((rho+press/pow(clight,2)) )/(r*(r-2*ggrav*m/pow(clight,2)))*(m*ggrav/pow(clight,2) -  (f+kappa_2*(press/pow(clight,2) - rho))/(fR)*pow(r,3)*0.25   )/pow(clight,2);
@@ -199,7 +233,27 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
         //dPdr = -c_1/c_2;
     }
 
+    if(dPdr!=dPdr && ccount==5)
+    {
+        //cout << "ccount= " << endl;
+        cout << "r_count= " << r_count << endl;
+        cout << "dPdr= " << dPdr << endl;
+        cout << "P_r_0= " << P_r_0 << endl;
+        cout << "alpha_r= " << P_r_0 << endl;
+        cout << "beta_r= " << beta_r<< endl;
+        cout << "Omega= " << Omega << endl;
+        cout << "S= " << S << endl;
+        cout << "tau_rr= " << tau_rr << endl;
+        cout << "tau_tt= " << tau_tt << endl;
+        cout << "sigma_1= " << sigma_1 << endl;
+        cout << "sigma_2= " << sigma_1 << endl;
+        cout << "dQdP= " << dQdP << endl;
+        cout << "1-beta_r*P_r_0= " << 1-beta_r*P_r_0 << endl;
 
+
+
+        cout << endl;
+    }
 
 
 
@@ -325,7 +379,7 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
 
 
         dbeta_rdr = beta_r/r
-                    + 0*(2*r)*(ddOmegadPP*dPdr/Omega - dOmegadP/pow(fR,2)*dOmegadP*dPdr)*(1- (rho + press/pow(clight,2))*0.5*( 1.5* dOmegadP/Omega - (dOmegadP/Omega - dSdP/S)) )
+                    + (2*r)*(ddOmegadPP*dPdr/Omega - dOmegadP/pow(fR,2)*dOmegadP*dPdr)*(1- (rho + press/pow(clight,2))*0.5*( 1.5* dOmegadP/Omega - (dOmegadP/Omega - dSdP/S)) )
                     + (2*r)*dOmegadP/Omega*(-0.75*(drhodP + 1)*dPdr*( dOmegadP/Omega - (dOmegadP/Omega - dSdP/S)/1.5) - 0.75*(rho+press)*(  (ddOmegadPP*dPdr/fR - dfRdP/pow(fR,2)*dfRdP*dPdr) - (dOmegaPDOmegadP - dSPDSdP)/1.5)*dPdr );
 /*
         ddOmegadPP = ddfRdPP;
@@ -342,7 +396,7 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
         double v2 = 1.5*dOmegadP/Omega - (dOmegadP/Omega + dSdP/S);
         double dv2dr = 1.5*dOmegaPDOmegadr - (dOmegaPDOmegadr + dSPDSdr);
         double v = 1- 0.5*(rho + press/pow(clight,2))*v2;
-        double dvdr = - 0.5*(drho_dp[num_an](press)+ dPdr/pow(clight,2)  )*dv2dr - 0.5*(rho + press/pow(clight,2))*v2;
+        double dvdr = - 0.5*(drhodP+ dPdr/pow(clight,2)  )*dv2dr - 0.5*(rho + press/pow(clight,2))*v2;
 
 
         double d1Dsqrt_det_sigmadP = -0.5*pow(det_sigma,-3./2.)*(pow(sigma_2,3)*dSigma1dP + 3*sigma_1*pow(sigma_2,2)*dSigma2dP);
@@ -451,7 +505,7 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     double dm_dr = new_dmdr*pow(clight,2)/ggrav;
     double dp_dr = dPdr;
 
-    //dm_dr = get_gradients2[1](m/Gdc2, press/Gdc4, r).first*Gdc2;
+    dm_dr = get_gradients2[1](m/Gdc2, press/Gdc4, r).first*Gdc2;
     //dp_dr = get_gradients2[1](m /Gdc2, press /Gdc4, r).second*Gdc4;
 
 
@@ -481,6 +535,7 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     dm_dr /= Gdc2;
     m /= Gdc2;
     dp_dr /= Gdc4;
+
 
 
     return make_pair(dm_dr, dp_dr);

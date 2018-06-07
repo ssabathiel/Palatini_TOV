@@ -15,7 +15,7 @@ void configure()
     ap4_EOS =           0;
 
     alpha =1.0*pow(10,-9);
-    beta = 1.0*pow(10,-9);
+    beta = 10.0*pow(10,9);
 
     Rp = 1.0/alpha;
     Rq = 1.0/beta;
