@@ -87,7 +87,7 @@ pair<double, double> tov_integrate(double rho_C)
         double rho_now= rho_of_p[num_an](press_now);
         for(int l=0;l<p_rho_profiles.size();l++)
         {
-            if(ccount == l )
+            if(ccount == detailed_stars[l] )
             {
                 fprintf(p_rho_profiles[l],"%.10lf %.10lf %.10lf\n",press_now,rho_now,r);
             }

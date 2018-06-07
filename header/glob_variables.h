@@ -11,6 +11,9 @@
     extern double Rp;
     extern double Rq;
 
+    extern double alpha;
+    extern double beta;
+
     extern bool GR_theory;
     extern bool fR_theory;
     extern bool fRQ_theory;
@@ -109,6 +112,7 @@
     extern std::vector<p_of_rho_functions> p_of_rho;
     extern std::vector<drho_dp_functions> drho_dp;
     extern std::vector<ddrho_dpp_functions> ddrho_dPP;
+    extern std::vector<int> detailed_stars;
 
 
 

@@ -32,7 +32,8 @@ HEADERS += \
     linalg_library/stdafx.h \
     header/get_gradient_fr_lim.h \
     header/ply_analytical.h \
-    header/get_gradient_fr_metric.h
+    header/get_gradient_fr_metric.h \
+    header/whole.h
 
 SOURCES += \
     linalg_library/alglibinternal.cpp \

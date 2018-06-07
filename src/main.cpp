@@ -27,6 +27,8 @@
 #include "header/integrate_star.h"
 #include "header/meta_functions.h"
 #include "header/configure.h"
+#include "header/whole.h"
+
 using namespace std;
 using namespace constants;
 
@@ -84,8 +86,11 @@ bool ap4_EOS;
 
 double Rp;
 double Rq;
+double alpha;
+double beta;
 int th;
 int num_an;
+int eos_id;
 double min_press;
 
 double a1;
@@ -111,10 +116,10 @@ vector<rho_of_p_functions> rho_of_p;
 vector<p_of_rho_functions> p_of_rho;
 vector<drho_dp_functions> drho_dp;
 vector<ddrho_dpp_functions> ddrho_dPP;
+vector<int> detailed_stars;
 
 int main()
 {
-
     configure();
     rho_of_p.push_back(rho_of_p_analytical);
     rho_of_p.push_back(rho_of_p_num);
@@ -219,9 +224,6 @@ int main()
     else if(ap4_EOS==1){num_an=0;}
 
 
-
-
-
     /*
     th=0;
     while(th<3)
@@ -248,18 +250,21 @@ int main()
     rewind(ifp2);
 
 
-    vector<int> detailed_stars;
-    detailed_stars.push_back(7);
-    detailed_stars.push_back(41);
-    detailed_stars.push_back(48);
-    detailed_stars.push_back(49);
+    //vector<int> detailed_stars;
+    detailed_stars.push_back(1);
+    detailed_stars.push_back(10);
+    detailed_stars.push_back(18);
+    detailed_stars.push_back(22);
 
 
     for(int l=0;l<detailed_stars.size();l++)
     {
         string detailed_star = to_string(detailed_stars[l]);
-        output_path = "./Plotting/Results/Profiles/p_of_rho_ccount_";
-        output_path.append(detailed_star);
+        output_path = "./Plotting/Results/Profiles/star";
+        output_path.append(to_string(l).c_str());
+        output_path.append("/TOV_output_");
+        output_path.append(theory_ID);
+
         p_rho_profiles.push_back(fopen(output_path.c_str(),"w"));
         rewind(p_rho_profiles[l]);
     }
