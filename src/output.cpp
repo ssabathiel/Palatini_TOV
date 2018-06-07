@@ -42,6 +42,7 @@ void output_to_arrays(const char* i_file_name,  vector<double> &rhos, vector<dou
 string DoublePowToString(double Rpp)
 {
 
+    cout << "Rpp== " << Rpp << endl;
     string coeff_sign;
     int shift=0;
     if(Rpp<0)
@@ -106,12 +107,43 @@ string DoublePowToString(double Rpp)
     Rp_string.append(pow_sign);
     Rp_string.append(Rp_pot);
 
-    cout << "Rp_value= " << Rp_string << endl;
-    cout << "Rp_pot= " << Rp_pot << endl;
-
 
     return Rp_string;
 
+}
+
+string create_theory_ID_wo_alpha_beta()
+{
+    string theory_ID;
+    string EOS_ID_str;
+    string Rp_string;
+    string Rq_string;
+
+
+    if(analytical_EOS==1){EOS_ID_str="_SLY";}
+    else if(tabular_EOS==1){EOS_ID_str="_TAB";}
+    else if(ply_EOS==1){EOS_ID_str="_PLY";}
+    else if(fps_EOS==1){EOS_ID_str="_FPS";}
+    else if(ap4_EOS==1){EOS_ID_str="_AP4";}
+
+    if(th==0)
+    {
+        theory_ID  = "GR";
+        theory_ID.append(EOS_ID_str);
+    }
+    if(th==1 || th==4)
+    {
+        theory_ID  = "fR";
+        theory_ID.append(EOS_ID_str);
+
+    }
+    if(th==2)
+    {
+        theory_ID  = "fRQ";
+        theory_ID.append(EOS_ID_str);
+    }
+
+    return theory_ID;
 }
 
 

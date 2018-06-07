@@ -17,6 +17,7 @@
 void output_to_arrays(const char* i_file_name,  std::vector<double> &rhos, std::vector<double> &masses, std::vector<double> &radii );
 std::string DoublePowToString(double Rpp);
 std::string create_theory_ID();
+std::string create_theory_ID_wo_alpha_beta();
 
 #endif // OUTPUT
 

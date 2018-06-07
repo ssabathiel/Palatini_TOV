@@ -77,7 +77,7 @@ pair<double, double> get_gradients_fRQ(double m, double press, double r)
     if(Rp/(32.0) * pow(     -  pow( (R)/(Rp) + f_tildeR,2 ) -(4*kappa_2*(rho+press/pow(clight,2) ) )/(Rp), 1  )<0){b=-1.0;}
     double Q=(3*pow(Rq,2)/8)*(1-(2*kappa_2*(rho+press/pow(clight,2))/Rq)+(2*pow(kappa_2,2)*pow((rho-3*press/pow(clight,2)),2)/(3*pow(Rq,2)))-pow(1-(4*kappa_2*(rho+press/pow(clight,2)))/Rq,0.5));     //make Energy-dependent??
 
-    Q = 2*Rp* (-(kappa_2*press/pow(clight,2) + f_tilde*0.5 + (Rp/(8.0*b))*pow(f_tildeR,2) )
+    Q = 2*Rp/b* (-(kappa_2*press/pow(clight,2) + f_tilde*0.5 + (Rp/(8.0*b))*pow(f_tildeR,2) )
     + Rp/(32.0*b) * pow(    3*((R*b)/(Rp) + f_tildeR) - pow( pow( (R*b)/(Rp) + f_tildeR,2 ) -(4*b*kappa_2*(rho+press/pow(clight,2) ) )/(Rp), 0.5  ),2) ); //From Helios--> Olmo --> p/m-paper
 
     double f=R+a*pow(R,2)/Rp + Q/Rq;

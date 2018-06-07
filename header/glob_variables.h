@@ -13,6 +13,10 @@
 
     extern double alpha;
     extern double beta;
+    extern double alpha_start;
+    extern double alpha_end;
+    extern double alpha_step;
+    extern bool alpha_iterate;
 
     extern bool GR_theory;
     extern bool fR_theory;

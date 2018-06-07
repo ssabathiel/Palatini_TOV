@@ -42,7 +42,7 @@ get_gradients_functions get_gradients4[]=
 // https://arxiv.org/pdf/1307.7977.pdf  // That's where you get the equations from.
 //https://arxiv.org/pdf/0910.5480.pdf
 // https://arxiv.org/pdf/1003.3179.pdf  //Good one: metric f(R) for many EOSs
-// https://arxiv.org/pdf/1301.5189.pdf  // Also good to compare
+// https://arxiv.org/pdf/1301.5189.pdf  // That's the best explaining one
 // https://arxiv.org/pdf/1112.4154.pdf  // f(R,Q)
 // https://arxiv.org/pdf/1408.3856.pdf
 // https://ac.els-cdn.com/S0370269315000404/1-s2.0-S0370269315000404-main.pdf?_tid=de192040-c4b8-4fee-af3a-bbb59ea00d91&acdnat=1527331338_49adf0649a4a7ef587a1f5c71de2db73
@@ -155,6 +155,7 @@ pair<double, double> get_gradients_fR_metric(double m, double press, double r)
 
     double ddhRdPP = ddhRdRR*dRdP + hRR*ddRdPP;
     double ddhRdrr = ddhRdPP*dPdr*dPdr + dhRdP*ddPdrr;
+
 
     double dmdr = 4*pi*rho*pow(r,2) - alpha*pow(r,2)*( 4*pi*rho*hR - 0.25*(hR*R - h) -  1.0/(2*Ar)*( (2.0/r - A_prime/(2*Ar) )*dhRdr +  ddhRdrr        )  );
 
