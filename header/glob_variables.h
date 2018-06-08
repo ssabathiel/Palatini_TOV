@@ -18,6 +18,11 @@
     extern double alpha_step;
     extern bool alpha_iterate;
 
+    extern double beta_start;
+    extern double beta_end;
+    extern double beta_step;
+    extern bool beta_iterate;
+
     extern bool GR_theory;
     extern bool fR_theory;
     extern bool fRQ_theory;

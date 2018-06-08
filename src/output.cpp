@@ -41,8 +41,13 @@ void output_to_arrays(const char* i_file_name,  vector<double> &rhos, vector<dou
 
 string DoublePowToString(double Rpp)
 {
-
+    // TODO:
+    // Rephrase this part into: Base_val_shift, Base_pos_shift, Pot_val_shift, Pot_pos_shift. And go serial +/- by checking each condition
     cout << "Rpp== " << Rpp << endl;
+
+    int pot_val_shift=0;
+    int pot_pos_shift=0;
+
     string coeff_sign;
     int shift=0;
     if(Rpp<0)
@@ -59,15 +64,44 @@ string DoublePowToString(double Rpp)
     string pow_sign;
     int shift2=0;
     int shift3=0;
+    int shift5=0;
     if(log10(abs(Rpp))<0)
     {
         pow_sign="";
-        shift2=1;
+        shift2=0;
+        pot_pos_shift += 1;
+        if(abs(log10(abs(Rpp)))>9)
+        {
+            pot_pos_shift += 1;
+            pot_val_shift += 0;
+
+        }
+        else
+        {
+            pot_val_shift += 0;
+            pot_pos_shift -= 1;
+        }
+
     }
     else
     {
         pow_sign="+";
+        if(abs(log10(abs(Rpp)))>9.999)
+        {
+            pot_pos_shift += 1;
+        }
+        else
+        {
+            pot_pos_shift -= 1;
+        }
         shift3=1;
+        shift2=0;
+    }
+
+    if(abs(log10(abs(Rpp)))>9)
+    {
+        cout << "Yes  bigger 9" << endl;
+        shift5=1;
     }
 
     int shift4=0;
@@ -78,14 +112,14 @@ string DoublePowToString(double Rpp)
 
     cout << "log10(abs(Rpp))= " << log10(abs(Rpp)) << endl;
     char Rp_value[4];
-    char Rp_pot[3-shift3+shift4];
+    char Rp_pot[3+pot_pos_shift];//shift3+shift4+shift5];
 
     memset(Rp_value, 0, sizeof(Rp_value));
     snprintf(Rp_value, sizeof(Rp_value), "%g", Rpp);
     std::string strObj4(Rp_value);
 
     memset(Rp_pot, 0, sizeof(Rp_pot));
-    snprintf(Rp_pot, sizeof(Rp_pot), "%g", log10(abs(Rpp))-shift2+shift4 );
+    snprintf(Rp_pot, sizeof(Rp_pot), "%g", log10(abs(Rpp)) - pot_val_shift);//-shift2+shift4+shift5 );
     std::string strObj2(Rp_pot);
 
 

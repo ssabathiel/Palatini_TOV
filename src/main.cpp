@@ -93,6 +93,11 @@ double alpha_end;
 double alpha_step;
 bool alpha_iterate;
 
+double beta_start;
+double beta_end;
+double beta_step;
+bool beta_iterate;
+
 int th;
 int num_an;
 int eos_id;
@@ -234,21 +239,36 @@ int main()
 
     string alpha_maxmass_file = "./Plotting/Results/";
     alpha_maxmass_file.append(create_theory_ID_wo_alpha_beta() );
-    alpha_maxmass_file.append("_Maxmass");
-    FILE *ifp_maxmass=fopen(alpha_maxmass_file.c_str(),"w");
-    rewind(ifp_maxmass);
+    alpha_maxmass_file.append("_Maxmass_alpha");
+    FILE *ifp_maxmass_alpha=fopen(alpha_maxmass_file.c_str(),"w");
+    rewind(ifp_maxmass_alpha);
+
+    alpha_maxmass_file = "./Plotting/Results/";
+    alpha_maxmass_file.append(create_theory_ID_wo_alpha_beta() );
+    alpha_maxmass_file.append("_Maxmass_beta");
+    FILE *ifp_maxmass_beta=fopen(alpha_maxmass_file.c_str(),"w");
+    rewind(ifp_maxmass_beta);
+
+    alpha_maxmass_file = "./Plotting/Results/";
+    alpha_maxmass_file.append(create_theory_ID_wo_alpha_beta() );
+    alpha_maxmass_file.append("_Maxmass_alpha_beta");
+    FILE *ifp_maxmass_alpha_beta=fopen(alpha_maxmass_file.c_str(),"w");
+    rewind(ifp_maxmass_alpha_beta);
+
+    FILE *ifp;
+    FILE *ifp2;
 
     //th=0;
 
     alpha = alpha_start;
+    beta = beta_start;
     while(alpha<alpha_end)
     {
-        cout << "alpha= " << alpha << endl;
-         if(abs(alpha)>pow(10,-80))
-         {
-            ///////////////////////////////////////
-            //LOOP OVER RHO_CENTERS if multiple stars, other wise INTEGRATE ONLY ONCE
-            ///////////////////////////////////////
+        cout << "ALPHA= " << alpha << endl;
+        while(beta<beta_end)
+        {
+            cout << "BETA= " << beta << endl;
+
             double Mass;
             double Radius;
             vector<double> Masses;
@@ -259,91 +279,122 @@ int main()
             double Maxmass = 0;
             double Maxmass_Radius = 0;
 
-            string theory_ID = create_theory_ID();
-            string output_path = "./Plotting/Results/TOV_output_";
-            output_path.append(theory_ID);
-            output_path.append(pal_metr_str);
-            FILE *ifp=fopen(output_path.c_str(),"w");
-            rewind(ifp);
-            FILE *ifp2=fopen("TOV_output","w");
-            rewind(ifp2);
+             if(abs(alpha)>pow(10,-80) && abs(beta)>pow(10,-80))
+             {
+                ///////////////////////////////////////
+                //LOOP OVER RHO_CENTERS if multiple stars, other wise INTEGRATE ONLY ONCE
+                ///////////////////////////////////////
 
 
-            //vector<int> detailed_stars;
-            detailed_stars.push_back(1);
-            detailed_stars.push_back(10);
-            detailed_stars.push_back(18);
-            detailed_stars.push_back(22);
-cout << "new alpha new luck" << endl;
-/*
-            for(int l=0;l<detailed_stars.size();l++)
-            {
-                string detailed_star = to_string(detailed_stars[l]);
-                output_path = "./Plotting/Results/Profiles/star";
-                output_path.append(to_string(l).c_str());
-                output_path.append("/TOV_output_");
+                string theory_ID = create_theory_ID();
+                string output_path = "./Plotting/Results/TOV_output_";
                 output_path.append(theory_ID);
+                output_path.append(pal_metr_str);
+                ifp=fopen(output_path.c_str(),"w");
+                rewind(ifp);
+                ifp2=fopen("TOV_output","w");
+                rewind(ifp2);
 
-                p_rho_profiles.push_back(fopen(output_path.c_str(),"w"));
-                rewind(p_rho_profiles[l]);
-            }
-*/
-            while(rho_center_now < rho_center_max){
-                ccount++;
-                pair<double, double> Mass_Radius = tov_integrate(rho_center_now);
 
-                Mass = Mass_Radius.first;
-                Radius = Mass_Radius.second;
-
-                Masses.push_back(Mass);
-                Radi.push_back(Radius);
-
-                cout << "Mass at Star# " << ccount << " = "<< Mass << endl;
-                cout << "rho at star# " << ccount << " = " << rho_center_now << endl;
-                cout << "Radius at star# " << ccount << " = " << Radius << endl << endl;
-
-                //Write Result on File "TOV_output"
-                fprintf(ifp,"%.10lf %.10lf %.10lf\n",rho_center_now,Mass,Radius);
-                fprintf(ifp2,"%.10lf %.10lf %.10lf\n",rho_center_now,Mass,Radius);
-
-                rho_center_now = rho_center_now*1.2;
-                if(Mass>Maxmass)
+                //vector<int> detailed_stars;
+                detailed_stars.push_back(1);
+                detailed_stars.push_back(10);
+                detailed_stars.push_back(18);
+                detailed_stars.push_back(22);
+    cout << "new alpha new luck" << endl;
+    /*
+                for(int l=0;l<detailed_stars.size();l++)
                 {
-                    Maxmass = Mass;
-                    Maxmass_Radius = Radius;
+                    string detailed_star = to_string(detailed_stars[l]);
+                    output_path = "./Plotting/Results/Profiles/star";
+                    output_path.append(to_string(l).c_str());
+                    output_path.append("/TOV_output_");
+                    output_path.append(theory_ID);
+
+                    p_rho_profiles.push_back(fopen(output_path.c_str(),"w"));
+                    rewind(p_rho_profiles[l]);
                 }
-                cout << "rho_center_now= " << rho_center_now << endl;
+    */
+                while(rho_center_now < rho_center_max)
+                {
+                    ccount++;
+                    pair<double, double> Mass_Radius = tov_integrate(rho_center_now);
 
-            }
-            rewind(ifp);
-            rewind(ifp2);
+                    Mass = Mass_Radius.first;
+                    Radius = Mass_Radius.second;
 
-            ///////
-            // Save Maxmass of this alpha
-            fprintf(ifp_maxmass,"%.10lf %.10lf %.10lf\n",alpha,Maxmass,Maxmass_Radius);
+                    Masses.push_back(Mass);
+                    Radi.push_back(Radius);
+
+                    cout << "Mass at Star# " << ccount << " = "<< Mass << endl;
+                    cout << "rho at star# " << ccount << " = " << rho_center_now << endl;
+                    cout << "Radius at star# " << ccount << " = " << Radius << endl << endl;
+
+                    //Write Result on File "TOV_output"
+                    if(alpha_iterate==0 || beta_iterate==0)
+                    {
+                        fprintf(ifp,"%.10lf %.10lf %.10lf\n",rho_center_now,Mass,Radius);
+                        fprintf(ifp2,"%.10lf %.10lf %.10lf\n",rho_center_now,Mass,Radius);
+                    }
+
+                    rho_center_now = rho_center_now*1.2;
+                    if(Mass>Maxmass)
+                    {
+                        Maxmass = Mass;
+                        Maxmass_Radius = Radius;
+                    }
+                    cout << "rho_center_now= " << rho_center_now << endl;
+
+                }
+                rewind(ifp);
+                rewind(ifp2);
+
+                ///////
+                // Save Maxmass of this alpha
+                if(alpha_iterate==1 && beta_iterate==0){ fprintf(ifp_maxmass_alpha,"%.10lf %.10lf %.10lf\n",alpha,Maxmass,Maxmass_Radius); }
+
+                ///////
+                // Save Maxmass of this alpha
+                if(alpha_iterate==0 && beta_iterate==1){ fprintf(ifp_maxmass_beta,"%.10lf %.10lf %.10lf\n",beta,Maxmass,Maxmass_Radius); }
+
+                ///////
+                // Save Maxmass of this alpha
+                if(alpha_iterate==1 && beta_iterate==1){ fprintf(ifp_maxmass_alpha_beta,"%.10lf %.10lf %.10lf %.10lf\n",alpha,beta,Maxmass,Maxmass_Radius);}
+                }
+
 
 
             /////////////////////////
             //PLOT TOV-RESULTS: R,M
             ////////////////////////
             //plotting_function(File ifp, string file_name, string title, string x_label, string y_label, bool x_log, bool y_log, int x_eq_col_num, int y_eq_col_num)
-            if(alpha_iterate==0){ plotting_function("TOV_output", "R to M", "R[cm]", "M/M_O");}
+            if(alpha_iterate==0 && beta_iterate==0){ plotting_function("TOV_output", "R to M", "R[cm]", "M/M_O");}
             fclose(ifp);
             fclose(ifp2);
             cout << "Maxmass= " << Maxmass << endl;
             Maxmass = 0;
             Maxmass_Radius = 0;
 
-        }
-
             ccount = 0;
-            alpha=alpha+alpha_step;
+            beta=beta+beta_step;
             Rp = 1.0/alpha;
             Rq = 1.0/beta;
-            if(alpha_iterate==0){break;}
+            if(beta_iterate==0 || fRQ_theory!=1){break;}
+            cout << "===================================" << endl;
 
-    }
-    rewind(ifp_maxmass);
+        } // Beta-close
+
+        ccount = 0;
+        alpha=alpha+alpha_step;
+        Rp = 1.0/alpha;
+        Rq = 1.0/beta;
+        if(alpha_iterate==0){break;}
+        cout << "===================================" << endl;
+
+    } // ALPHA-close
+    rewind(ifp_maxmass_alpha);
+    rewind(ifp_maxmass_beta);
+    rewind(ifp_maxmass_alpha_beta);
 }
 
 /////////////////////END MAIN
