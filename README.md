@@ -20,4 +20,5 @@ As parameters it takes the EOS either in tabular form or as analytical expressio
 In this version I looked into the results using 1) Einsteins theory of gravity and 2) modified theories of gravity (f(R), f(R,Q))
 f(R) and f(R,Q) theories extend the action S in the Einstein formulation with additional scalars built from the Ricci Scalar R or the quadratic curvature invariant Q.
 
-![image](https://user-images.githubusercontent.com/38614357/149629292-b9d05632-c443-4512-ab84-e14c4db9d4bd.png)
+![Screenshot from 2022-01-15 17-21-17](https://user-images.githubusercontent.com/38614357/149629321-e0b83df1-9ff0-443b-ac54-7a0aa3903682.png)
+
